@@ -23,7 +23,10 @@ app.use(express.json());
 app.use("/api", require("./Routes/UserRoutes"));
 app.use("/api", require("./Routes/DisplayDataRoutes"));
 app.use("/api", require("./Routes/OrderRoutes"));
+app.use("/api", require("./Routes/UploadRoutes"));
 app.use("/api/payment", require("./Routes/PaymentRoutes"));
+app.use("/api/admin", require("./Routes/AdminRoutes"));
+app.use("/api/admin/foods", require("./Routes/FoodRoutes"));
 
 // Test Route
 app.get("/", (req, res) => {

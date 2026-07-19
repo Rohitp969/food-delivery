@@ -1,102 +1,181 @@
-import React from "react";
-import { useCart, useDispatchCart } from "../components/ContextReducer";
-import { FaTrash } from "react-icons/fa";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FaShoppingBag, FaArrowLeft, FaTruck, FaGift } from "react-icons/fa";
+import { useCart, useDispatchCart } from "../context/ContextReducer";
+import CartItem from "../components/cart/CartItem";
+import OrderSummary from "../components/cart/OrderSummary";
+import EmptyCart from "../components/cart/EmptyCart";
+import AddressModal from "../components/cart/AddressModal";
+import Navbar from "../components/Navbar"; // ✅ Import Navbar
+import Footer from "../components/Footer"; // ✅ Import Footer (if needed)
 
 const Cart = () => {
-  let data = useCart();
-  let dispatch = useDispatchCart();
+  const data = useCart();
+  const dispatch = useDispatchCart();
+  const navigate = useNavigate();
+
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const subtotal = data.reduce(
+    (total, item) => total + item.qty * item.price,
+    0
+  );
+  const deliveryFee = subtotal >= 499 ? 0 : 40;
+  const gst = Math.round(subtotal * 0.05);
+  const total = subtotal + deliveryFee + gst;
+
   if (data.length === 0) {
     return (
-      <div className="text-center py-5">
-        <h2 className="text-light">🛒 Your Cart is Empty</h2>
-
-        <p className="text-secondary mt-2">
-          Add some delicious food to continue
-        </p>
-      </div>
+      <>
+        <Navbar />  {/* ✅ Navbar on empty cart too */}
+        <EmptyCart />
+      </>
     );
   }
 
-  const handleCheckOut = async () => {
-    let userEmail = localStorage.getItem("userEmail");
-    console.log(localStorage.getItem("userEmail"));
-    let response = await fetch("http://localhost:5000/api/orderData", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        order_data: data,
-        email: userEmail,
-        order_date: new Date().toDateString(),
-      }),
-    });
-    console.log("Order Response:", response);
+  const handleCheckOut = async ({
+    totalAmount,
+    paymentMethod,
+    address,
+    orderId,
+  }) => {
+    setLoading(true);
+    try {
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) {
+        toast.error("Please login to place order");
+        navigate("/login");
+        return false;
+      }
 
-    if (response.status === 200) {
-      dispatch({ type: "DROP" });
-      toast.success("Order placed successfully 🎉");
+      const response = await fetch("http://localhost:5000/api/orderData", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userEmail,
+          order_data: data,
+          order_date: new Date().toLocaleString(),
+          address,
+          paymentMethod,
+          totalAmount,
+          orderId,
+        }),
+      });
+
+      const json = await response.json();
+
+      if (json.success) {
+        dispatch({ type: "DROP" });
+        toast.success("Order Placed Successfully 🎉");
+        navigate("/order-success", {
+          state: {
+            orderId,
+            totalAmount,
+            paymentMethod,
+            address,
+          },
+        });
+        return true;
+      } else {
+        toast.error(json.message || "Unable to create order");
+        return false;
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Server Error");
+      return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  let totalPrice = data.reduce(
-    (total, food) => total + food.qty * food.price,
-    0,
-  );
+  const proceedToCheckout = () => {
+    if (data.length === 0) {
+      toast.warn("Your cart is empty");
+      return;
+    }
+    setShowAddressModal(true);
+  };
 
   return (
-    <div>
-      {/* <div className="container m-auto mt-5 table-responsive table-responsive-sm table-responsive-md "> */}
-      <div className="w-full">
-        <table className="table table-hover text-white align-middle">
-          <thead className="text-success fs-5 border-bottom">
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Name</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Option</th>
-              <th scope="col">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((food, index) => (
-              <tr>
-                <th scope="row">{index + 1}</th>
-                <td>{food.name}</td>
-                <td>{food.qty}</td>
-                <td>{food.size}</td>
-                <td>₹ {food.qty * food.price}</td>
-                <td>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => {
-                      dispatch({ type: "REMOVE", index });
-                      toast.success("Item removed from cart 🗑️");
-                    }}
-                  >
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
-          <h3 className="text-light mb-0">Total Amount</h3>
+    <>
+      <Navbar />  {/* ✅ Navbar fixed at top */}
+      <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8 pt-20"> {/* ✅ pt-20 to offset fixed navbar */}
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition mb-2"
+              >
+                <FaArrowLeft size={14} />
+                Continue Shopping
+              </Link>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
+                <FaShoppingBag className="text-yellow-500" />
+                Your Cart
+                <span className="text-sm font-normal text-gray-400 ml-2">
+                  ({data.length} {data.length === 1 ? "item" : "items"})
+                </span>
+              </h1>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-gray-500">
+              <span className="hidden sm:inline">
+                {deliveryFee === 0 ? (
+                  <span className="text-green-600 flex items-center gap-1">
+                    <FaTruck /> Free Delivery
+                  </span>
+                ) : (
+                  <span>Add ₹{499 - subtotal} more for free delivery</span>
+                )}
+              </span>
+            </div>
+          </div>
 
-          <h2 className="text-success fw-bold mb-0">₹ {totalPrice}</h2>
-        </div>
-        <div className="mt-4">
-          <button
-            className="btn btn-success px-4 py-2 fw-bold"
-            onClick={handleCheckOut}
-          >
-            Proceed To Checkout
-          </button>
+          {/* Main Grid */}
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-3">
+              {data.map((item, index) => (
+                <CartItem key={index} item={item} index={index} />
+              ))}
+            </div>
+            <div className="lg:sticky lg:top-24 self-start">
+              <OrderSummary
+                data={data}
+                handleCheckOut={handleCheckOut}
+                dispatch={dispatch}
+                subtotal={subtotal}
+                deliveryFee={deliveryFee}
+                gst={gst}
+                total={total}
+                onProceed={proceedToCheckout}
+                loading={loading}
+              />
+            </div>
+          </div>
+
+          {deliveryFee > 0 && (
+            <div className="mt-6 lg:hidden bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center gap-2 text-sm text-yellow-700">
+              <FaTruck size={16} />
+              Add ₹{499 - subtotal} more to get free delivery!
+            </div>
+          )}
         </div>
       </div>
-    </div>
+      <Footer />  {/* Optional: include footer if needed */}
+
+      {showAddressModal && (
+        <AddressModal
+          total={total}
+          closeModal={() => setShowAddressModal(false)}
+          handleCheckOut={handleCheckOut}
+          dispatch={dispatch}
+        />
+      )}
+    </>
   );
 };
 

@@ -7,9 +7,9 @@ const Carousal = () => {
         id="carouselExampleFade" className="carousel slide carousel-fade" data-bs-ride="carousel" style={{objectFit: "contain !important"}}>
         <div className="carousel-inner" id="carousel">
           <div className="carousel-caption" style={{zIndex:"10"}}>
-            <form className="d-flex">
-           <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-           <button className="btn btn-outline-success text-white bg-success" type="submit">Search</button>
+            <form className="flex">
+           <input className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500 me-2" type="search" placeholder="Search" aria-label="Search"/>
+           <button className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white bg-success" type="submit">Search</button>
            </form>
           </div>
           <div className="carousel-item active">

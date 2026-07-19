@@ -3,7 +3,6 @@ const router = express.Router()
 
 router.post("/foodData", async (req, res)=>{
     try {
-        // console.log(global.goFood);
         res.send([global.goFood, global.foodCategory]);
     } catch (error) {
         console.log(error.message);

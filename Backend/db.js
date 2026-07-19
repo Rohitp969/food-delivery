@@ -21,9 +21,6 @@ const mongoDB = async () => {
     global.goFood = foodItems;
     global.foodCategory = foodCategory;
 
-    console.log(foodItems.length);
-    console.log(foodCategory.length);
-
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error.message);
   }

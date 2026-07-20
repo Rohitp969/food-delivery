@@ -13,9 +13,11 @@ mongoDB();
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:5173", // Vite frontend
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
+  origin: [
+    "http://localhost:5173",
+    "https://food-delivery-rho-rosy.vercel.app"
+  ],
+  credentials: true
 }));
 
 app.use(express.json());

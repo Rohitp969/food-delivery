@@ -109,7 +109,7 @@ const Card = (props) => {
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 group h-full flex flex-col">
       {/* Image Section */}
-      <div className="relative h-32 overflow-hidden bg-gray-100">
+      <div className="relative h-42 overflow-hidden bg-gray-100">
         <img
           src={imageSrc}
           alt={foodItem?.name || "Food"}

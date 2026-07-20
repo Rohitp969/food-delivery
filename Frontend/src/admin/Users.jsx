@@ -10,6 +10,8 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,7 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/admin/users");
+      const response = await fetch(`${API_URL}/api/admin/users`);
       const json = await response.json();
       if (json.success) {
         setUsers(json.users);
@@ -68,7 +70,7 @@ const Users = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admin/users/${deletingUser._id}`,
+        `${API_URL}/api/admin/users/${deletingUser._id}`,
         {
           method: "DELETE",
         },
@@ -122,7 +124,7 @@ const Users = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admin/users/${editingUser._id}`,
+        `${API_URL}/api/admin/users/${editingUser._id}`,
         {
           method: "PUT",
           headers: {

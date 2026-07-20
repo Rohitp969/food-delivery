@@ -18,6 +18,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { motion, AnimatePresence } from "framer-motion";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,8 @@ const Orders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -35,7 +39,7 @@ const Orders = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/admin/orders");
+      const response = await fetch(`${API_URL}/api/admin/orders`);
       const json = await response.json();
       if (json.success) {
         setOrders(json.orders);
@@ -53,7 +57,7 @@ const Orders = () => {
   const changeStatus = async (orderId, index, status) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admin/orders/${orderId}/${index}`,
+        `${API_URL}/api/admin/orders/${orderId}/${index}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

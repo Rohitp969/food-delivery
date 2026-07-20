@@ -4,6 +4,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const AdminProfile = () => {
   const [user, setUser] = useState({
     name: "",
@@ -61,7 +63,7 @@ const AdminProfile = () => {
 
   const fetchAdminStats = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/dashboard");
+      const res = await fetch(`${API_URL}/api/admin/dashboard`);
       const json = await res.json();
       if (json.success) {
         setStats({

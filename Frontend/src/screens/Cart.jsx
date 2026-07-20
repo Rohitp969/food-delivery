@@ -10,6 +10,8 @@ import AddressModal from "../components/cart/AddressModal";
 import Navbar from "../components/Navbar"; // ✅ Import Navbar
 import Footer from "../components/Footer"; // ✅ Import Footer (if needed)
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Cart = () => {
   const data = useCart();
   const dispatch = useDispatchCart();
@@ -50,7 +52,7 @@ const Cart = () => {
         return false;
       }
 
-      const response = await fetch("http://localhost:5000/api/orderData", {
+      const response = await fetch(`${API_URL}/api/orderData`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

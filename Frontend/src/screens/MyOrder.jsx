@@ -21,6 +21,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const MyOrder = () => {
   const [orderData, setOrderData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ const MyOrder = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/myOrderData", {
+      const response = await fetch(`${API_URL}/api/myOrderData`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

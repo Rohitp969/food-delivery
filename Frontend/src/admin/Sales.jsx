@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
 
 const Sales = () => {
@@ -67,7 +69,7 @@ const Sales = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `http://localhost:5000/api/admin/sales?days=${days}`
+        `${API_URL}/api/admin/sales?days=${days}`
       );
       const json = await response.json();
       if (json.success) {

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { PlusCircle, Upload, X, Image as ImageIcon } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const AddFood = () => {
   const [food, setFood] = useState({
     name: "",
@@ -47,7 +49,7 @@ const AddFood = () => {
     formData.append("image", file);
 
     try {
-      const response = await fetch("http://localhost:5000/api/upload", {
+      const response = await fetch(`${API_URL}/api/upload`, {
         method: "POST",
         body: formData,
       });
@@ -94,7 +96,7 @@ const AddFood = () => {
       };
 
       // Send to add food endpoint
-      const response = await fetch("http://localhost:5000/api/admin/foods/add", {
+      const response = await fetch(`${API_URL}/api/admin/foods/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

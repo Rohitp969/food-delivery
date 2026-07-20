@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Login = () => {
   const navigate = useNavigate();
 
@@ -27,7 +29,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/loginUser", {
+      const response = await fetch(`${API_URL}/api/loginUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,7 @@
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export const handleRazorpayPayment = async (
   total,
   address,
@@ -8,7 +10,7 @@ export const handleRazorpayPayment = async (
 ) => {
   try {
     const response = await fetch(
-      "http://localhost:5000/api/payment/create-order",
+      `${API_URL}/api/payment/create-order`,
       {
         method: "POST",
         headers: {
@@ -41,7 +43,7 @@ export const handleRazorpayPayment = async (
 
       handler: async function (response) {
         const verify = await fetch(
-          "http://localhost:5000/api/payment/verify-payment",
+          `${API_URL}/api/payment/verify-payment`,
           {
             method: "POST",
             headers: {

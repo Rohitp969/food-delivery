@@ -117,11 +117,9 @@ const AddressModal = ({ total, closeModal, handleCheckOut, dispatch }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        // ✅ Backdrop covers full screen, but content is offset below navbar
         className="fixed inset-0 bg-black/60 backdrop-blur-md z-40 flex items-start justify-center overflow-y-auto"
         onClick={(e) => e.target === e.currentTarget && closeModal()}
       >
-        {/* ✅ Offset container to start below navbar (h-16 = 64px) */}
         <div className="min-h-screen w-full flex items-start justify-center pt-16">
           <motion.div
             initial={{ scale: 0.95, y: 10 }}
@@ -133,7 +131,7 @@ const AddressModal = ({ total, closeModal, handleCheckOut, dispatch }) => {
             {/* Header */}
             <div className="relative bg-gradient-to-r from-green-600 to-emerald-500 px-6 py-3 flex items-center justify-between flex-shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-white tracking-tight">
+                <h2 className="text-xl font-bold text-white tracking-tight mt-4">
                   📦 Delivery Address
                 </h2>
                 <p className="text-green-100 text-xs mt-0.5">Where should we deliver your order?</p>

@@ -21,6 +21,8 @@ const COLORS = {
   terracotta: "#DC5F3C",
 };
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const PALETTE = ["#0F9D8C", "#C9971E", "#5B7FDE", "#DC5F3C"];
 
 const RevenueBarChart = ({ data }) => {
@@ -159,10 +161,11 @@ const Dashboard = () => {
   const [topFoods, setTopFoods] = useState([]);
   const [loading, setLoading] = useState(true);
 
+
   // ---------- API Calls ----------
   const fetchDashboard = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/dashboard");
+      const res = await fetch(`${API_URL}/api/admin/dashboard`);
       const json = await res.json();
       if (json.success) {
         setStats({
@@ -180,7 +183,7 @@ const Dashboard = () => {
   const fetchSales = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/admin/sales?days=${days}`
+        `${API_URL}/api/admin/sales?days=${days}`
       );
       const json = await res.json();
       if (json.success) {
@@ -203,7 +206,7 @@ const Dashboard = () => {
 
   const fetchRecentOrders = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/recent-orders");
+      const res = await fetch(`${API_URL}/api/admin/recent-orders`);
       const json = await res.json();
       if (json.success) {
         const orders = json.recentOrders || [];
@@ -217,7 +220,7 @@ const Dashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/users");
+      const res = await fetch(`${API_URL}/api/admin/users`);
       const json = await res.json();
       if (json.success) {
         setLatestUsers(json.users || []);
@@ -229,7 +232,7 @@ const Dashboard = () => {
 
   const fetchTopFoods = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/top-foods");
+      const res = await fetch(`${API_URL}/api/admin/top-foods`);
       const json = await res.json();
       if (json.success) {
         setTopFoods(json.topFoods || []);

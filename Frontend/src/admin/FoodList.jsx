@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { UtensilsCrossed } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const FoodList = () => {
   const [foods, setFoods] = useState([]);
   const [search, setSearch] = useState("");
@@ -31,7 +33,7 @@ const FoodList = () => {
   const fetchFoods = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/admin/foods");
+      const response = await fetch(`${API_URL}/api/admin/foods`);
       const json = await response.json();
       if (json.success) {
         setFoods(json.foods);
@@ -65,7 +67,7 @@ const FoodList = () => {
     setDeleting(true);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/foods/${deleteFoodId}`, {
+      const response = await fetch(`${API_URL}/api/admin/foods/${deleteFoodId}`, {
         method: "DELETE",
       });
       const json = await response.json();
@@ -91,7 +93,7 @@ const FoodList = () => {
   const updateFood = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/foods/${editFood._id}`, {
+      const response = await fetch(`${API_URL}/api/admin/foods/${editFood._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editFood),

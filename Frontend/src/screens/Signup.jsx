@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Signup = () => {
   const navigate = useNavigate();
 
@@ -30,7 +32,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/createUser", {
+      const response = await fetch(`${API_URL}/api/createUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

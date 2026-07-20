@@ -18,6 +18,8 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Checkout = () => {
   const data = useCart();
   const dispatch = useDispatchCart();
@@ -75,7 +77,7 @@ const Checkout = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/orderData", {
+      const response = await fetch(`${API_URL}/api/orderData`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

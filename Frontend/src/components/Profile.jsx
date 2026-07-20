@@ -18,6 +18,8 @@ import {
 import { toast } from "react-toastify";
 import Navbar from "./Navbar";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Profile = () => {
   const [user, setUser] = useState({
     name: "",
@@ -88,7 +90,7 @@ const Profile = () => {
     try {
       const email = localStorage.getItem("userEmail");
       const res = await fetch(
-        `http://localhost:5000/api/user/stats?email=${email}`
+        `${API_URL}/api/user/stats?email=${email}`
       );
       const json = await res.json();
       if (json.success) {

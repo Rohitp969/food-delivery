@@ -19,6 +19,8 @@ import {
 import { toast } from "react-toastify";
 import { useCart, useDispatchCart } from "../context/ContextReducer";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const FoodDetails = () => {
   const { id } = useParams();
 
@@ -41,7 +43,7 @@ const FoodDetails = () => {
   const fetchFood = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/food/${id}`);
+      const response = await fetch(`${API_URL}/api/food/${id}`);
       if (response.ok) {
         const json = await response.json();
         if (json.success && json.food) {
@@ -58,7 +60,7 @@ const FoodDetails = () => {
         }
       }
       // Fallback
-      const res = await fetch("http://localhost:5000/api/foodData", {
+      const res = await fetch(`${API_URL}/api/foodData`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

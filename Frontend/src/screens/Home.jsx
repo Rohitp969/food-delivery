@@ -5,6 +5,8 @@ import Card from "../components/Card";
 import { useWishlist } from "../context/WishlistContext"; // if wishlist context exists
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Home = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -32,7 +34,7 @@ const Home = () => {
 
   const loadData = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/foodData", {
+      const response = await fetch(`${API_URL}/api/foodData`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

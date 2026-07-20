@@ -3,12 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaShoppingBag, FaArrowLeft, FaTruck, FaGift } from "react-icons/fa";
 import { useCart, useDispatchCart } from "../context/ContextReducer";
-import CartItem from "../components/cart/CartItem";
-import OrderSummary from "../components/cart/OrderSummary";
-import EmptyCart from "../components/cart/EmptyCart";
-import AddressModal from "../components/cart/AddressModal";
-import Navbar from "../components/Navbar"; // ✅ Import Navbar
-import Footer from "../components/Footer"; // ✅ Import Footer (if needed)
+import CartItem from "../components/Cart/CartItem";
+import OrderSummary from "../components/Cart/OrderSummary";
+import AddressModal from "../components/Cart/AddressModal";
+import Navbar from "../components/Navbar"; 
+import Footer from "../components/Footer"; 
+import EmptyCart from "../components/Cart/EmptyCart";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -31,7 +31,7 @@ const Cart = () => {
   if (data.length === 0) {
     return (
       <>
-        <Navbar />  {/* ✅ Navbar on empty cart too */}
+        <Navbar />  
         <EmptyCart />
       </>
     );

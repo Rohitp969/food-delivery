@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import AddressModal from "../components/cart/AddressModal";
+import AddressModal from "../components/Cart/AddressModal";
 import { useCart, useDispatchCart } from "../context/ContextReducer";
 import { 
   FaShoppingBag, 
@@ -14,7 +14,8 @@ import {
   FaMinus,
   FaRupeeSign,
   FaCreditCard,
-  FaShieldAlt
+  FaShieldAlt,
+  FaArrowRight
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 

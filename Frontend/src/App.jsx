@@ -27,6 +27,7 @@ import Wishlist from "./components/Wishlist";
 import FoodDetails from "./screens/FoodDetails";
 import UserSettings from "./components/UserSettings";
 import AdminHelpSupport from "./admin/AdminHelpSupport";
+import RestaurantMenu from "./components/RestaurantMenu";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="/wishlist" element={<Wishlist />} />  {/* ✅ Already there */}
             <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/help" element={<HelpSupport />} />
+            <Route path="/restaurant/:id" element={<RestaurantMenu />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>

@@ -30,6 +30,7 @@ app.use("/api", require("./Routes/UploadRoutes"));
 app.use("/api/payment", require("./Routes/PaymentRoutes"));
 app.use("/api/admin", require("./Routes/AdminRoutes"));
 app.use("/api/admin/foods", require("./Routes/FoodRoutes"));
+app.use("/api/restaurants", require("./Routes/RestaurantRoutes"));
 
 // Test Route
 app.get("/", (req, res) => {

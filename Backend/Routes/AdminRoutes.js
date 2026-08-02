@@ -79,7 +79,7 @@ router.put("/orders/:orderId/:index", async (req, res) => {
       message: "Order status updated successfully",
     });
   } catch (err) {
-    console.error(err);
+    console.error(err);yupiiiuuy
     res.status(500).json({ success: false, message: "Server Error" });
   }
 });

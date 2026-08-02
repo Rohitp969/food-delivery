@@ -36,6 +36,11 @@ const FoodSchema = new mongoose.Schema(
     type: Date,
     default: Date.now,
   },
+   restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+  },
   },
   {
     collection: "food_items",

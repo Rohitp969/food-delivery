@@ -223,192 +223,768 @@
 
 
 
+// import React, { useState, useEffect } from "react";
+// import { Link } from "react-router-dom";
+// import Navbar from "../components/Navbar";
+// import Footer from "../components/Footer";
+// import RestaurantCard from "../components/RestaurantCard";
+// import { FaSearch, FaSpinner, FaMapMarkerAlt, FaFilter, FaUtensils } from "react-icons/fa";
+
+// const API_URL = import.meta.env.VITE_API_URL;
+
+// const Home = () => {
+//   const [restaurants, setRestaurants] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [search, setSearch] = useState("");
+//   const [userLocation, setUserLocation] = useState(null);
+//   const [locationLoading, setLocationLoading] = useState(false);
+//   const [error, setError] = useState(null);
+
+//   useEffect(() => {
+//     getUserLocation();
+//   }, []);
+
+//   const getUserLocation = () => {
+//     setLocationLoading(true);
+//     if (navigator.geolocation) {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           const lat = position.coords.latitude;
+//           const lng = position.coords.longitude;
+//           setUserLocation({ lat, lng });
+//           fetchRestaurants(lat, lng);
+//         },
+//         (error) => {
+//           console.warn("Location access denied. Showing all restaurants.");
+//           fetchRestaurants(null, null);
+//           setLocationLoading(false);
+//         }
+//       );
+//     } else {
+//       fetchRestaurants(null, null);
+//       setLocationLoading(false);
+//     }
+//   };
+
+//   const fetchRestaurants = async (lat, lng) => {
+//     setLoading(true);
+//     setError(null);
+//     try {
+//       let url = `${API_URL}/api/restaurants`;
+//       if (lat && lng) {
+//         url += `/nearby?lat=${lat}&lng=${lng}&radius=10`;
+//       }
+//       const res = await fetch(url);
+//       const data = await res.json();
+//       if (data.success) {
+//         setRestaurants(data.restaurants || []);
+//       } else {
+//         setError(data.message || "Failed to load restaurants");
+//       }
+//     } catch (err) {
+//       console.error(err);
+//       setError("Failed to load restaurants");
+//     } finally {
+//       setLoading(false);
+//       setLocationLoading(false);
+//     }
+//   };
+
+//   const filteredRestaurants = restaurants.filter((rest) =>
+//     rest.name.toLowerCase().includes(search.toLowerCase())
+//   );
+
+//   // Skeleton Loader
+//   const SkeletonCard = () => (
+//     <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 animate-pulse">
+//       <div className="h-48 bg-gray-200"></div>
+//       <div className="p-4 space-y-3">
+//         <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+//         <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+//         <div className="flex gap-2">
+//           <div className="h-5 bg-gray-200 rounded w-16"></div>
+//           <div className="h-5 bg-gray-200 rounded w-16"></div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+
+//   if (loading) {
+//     return (
+//       <>
+//         <Navbar />
+//         <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+//           <div className="max-w-7xl mx-auto">
+//             <div className="mb-8">
+//               <div className="h-8 bg-gray-200 rounded w-64 animate-pulse"></div>
+//               <div className="h-4 bg-gray-200 rounded w-96 mt-2 animate-pulse"></div>
+//             </div>
+//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+//               {[...Array(8)].map((_, i) => (
+//                 <SkeletonCard key={i} />
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+//         <Footer />
+//       </>
+//     );
+//   }
+
+//   return (
+//     <>
+//       <Navbar />
+//       <div className="min-h-screen bg-gray-50">
+//         {/* Hero Banner */}
+//         <div className="relative bg-gradient-to-r from-green-600 to-emerald-500 py-16 px-4 sm:px-6 lg:px-8">
+//           <div className="max-w-7xl mx-auto text-center text-white">
+//             <h1 className="text-4xl md:text-5xl font-bold mb-4">
+//               🍔 Order Food Online
+//             </h1>
+//             <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto">
+//               Discover the best restaurants near you. Delicious food delivered to your doorstep.
+//             </p>
+//             <div className="mt-6 flex justify-center">
+//               <div className="relative w-full max-w-md">
+//                 <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+//                 <input
+//                   type="text"
+//                   placeholder="Search restaurants..."
+//                   value={search}
+//                   onChange={(e) => setSearch(e.target.value)}
+//                   className="w-full pl-12 pr-4 py-3 bg-white text-gray-800 rounded-full outline-none shadow-lg focus:ring-2 focus:ring-yellow-400"
+//                 />
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Main Content */}
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+//           {/* Location Bar */}
+//           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+//             <div className="flex items-center gap-2 text-sm text-gray-600">
+//               <FaMapMarkerAlt className="text-green-500" />
+//               {locationLoading ? (
+//                 "Getting your location..."
+//               ) : userLocation ? (
+//                 <span>Showing restaurants within <span className="font-semibold">10 km</span> of your location</span>
+//               ) : (
+//                 <span>Showing all restaurants — <button onClick={getUserLocation} className="text-green-600 hover:underline">Enable location</button></span>
+//               )}
+//             </div>
+//             <button
+//               onClick={getUserLocation}
+//               className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition text-sm font-medium shadow-sm"
+//             >
+//               <FaMapMarkerAlt className="text-green-500" />
+//               Refresh Location
+//             </button>
+//           </div>
+
+//           {/* Results Count */}
+//           <div className="mb-6">
+//             <p className="text-sm text-gray-500">
+//               {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 && 's'} found
+//             </p>
+//           </div>
+
+//           {/* Restaurant Grid */}
+//           {filteredRestaurants.length === 0 ? (
+//             <div className="text-center py-16">
+//               <div className="text-6xl mb-4">🍕</div>
+//               <h3 className="text-2xl font-bold text-gray-800 mb-2">No restaurants found</h3>
+//               <p className="text-gray-500">
+//                 {search
+//                   ? "Try adjusting your search term."
+//                   : "No restaurants available in your area."}
+//               </p>
+//             </div>
+//           ) : (
+//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+//               {filteredRestaurants.map((rest) => (
+//                 <RestaurantCard key={rest._id} restaurant={rest} />
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//       <Footer />
+//     </>
+//   );
+// };
+
+// export default Home;
+
+
+
+
+
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import RestaurantCard from "../components/RestaurantCard";
-import { FaSearch, FaSpinner, FaMapMarkerAlt, FaFilter, FaUtensils } from "react-icons/fa";
+import {
+  FaSearch,
+  FaMapMarkerAlt,
+  FaSpinner,
+} from "react-icons/fa";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
 const Home = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+
   const [userLocation, setUserLocation] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
+
+  const [locationEnabled, setLocationEnabled] = useState(false);
+
+  const [message, setMessage] = useState(
+    "Showing all restaurants"
+  );
+
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    getUserLocation();
-  }, []);
 
-  const getUserLocation = () => {
-    setLocationLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setUserLocation({ lat, lng });
-          fetchRestaurants(lat, lng);
-        },
-        (error) => {
-          console.warn("Location access denied. Showing all restaurants.");
-          fetchRestaurants(null, null);
-          setLocationLoading(false);
-        }
-      );
-    } else {
-      fetchRestaurants(null, null);
-      setLocationLoading(false);
-    }
-  };
+  // ==========================================
+  // FETCH ALL RESTAURANTS
+  // ==========================================
 
-  const fetchRestaurants = async (lat, lng) => {
-    setLoading(true);
-    setError(null);
+  const fetchAllRestaurants = async () => {
     try {
-      let url = `${API_URL}/api/restaurants`;
-      if (lat && lng) {
-        url += `/nearby?lat=${lat}&lng=${lng}&radius=10`;
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(
+        `${API_URL}/api/restaurants`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status}`
+        );
       }
-      const res = await fetch(url);
-      const data = await res.json();
+
+      const data = await response.json();
+
       if (data.success) {
-        setRestaurants(data.restaurants || []);
+        setRestaurants(
+          Array.isArray(data.restaurants)
+            ? data.restaurants
+            : []
+        );
+
+        setMessage("Showing all restaurants");
       } else {
-        setError(data.message || "Failed to load restaurants");
+        throw new Error(
+          data.message || "Failed to load restaurants"
+        );
       }
     } catch (err) {
-      console.error(err);
-      setError("Failed to load restaurants");
+      console.error("All restaurants error:", err);
+
+      setRestaurants([]);
+
+      setError(
+        "Unable to load restaurants. Please check your backend server."
+      );
     } finally {
       setLoading(false);
       setLocationLoading(false);
     }
   };
 
-  const filteredRestaurants = restaurants.filter((rest) =>
-    rest.name.toLowerCase().includes(search.toLowerCase())
+
+  // ==========================================
+  // PAGE LOAD
+  // LOCATION OFF BY DEFAULT
+  // ==========================================
+
+  useEffect(() => {
+    fetchAllRestaurants();
+  }, []);
+
+
+  // ==========================================
+  // LOCATION ON
+  // ==========================================
+
+  const enableLocation = () => {
+    setError(null);
+
+    if (!navigator.geolocation) {
+      setMessage(
+        "Location is not supported. Showing all restaurants."
+      );
+
+      fetchAllRestaurants();
+      return;
+    }
+
+    setLocationLoading(true);
+    setLoading(true);
+
+    setMessage("Getting your location...");
+
+    navigator.geolocation.getCurrentPosition(
+
+      // SUCCESS
+      async (position) => {
+        const lat = Number(
+          position.coords.latitude
+        );
+
+        const lng = Number(
+          position.coords.longitude
+        );
+
+        console.log("User location:", {
+          lat,
+          lng,
+        });
+
+        setUserLocation({
+          lat,
+          lng,
+        });
+
+        setLocationEnabled(true);
+
+        try {
+          const response = await fetch(
+            `${API_URL}/api/restaurants/nearby?lat=${encodeURIComponent(
+              lat
+            )}&lng=${encodeURIComponent(
+              lng
+            )}&radius=10`
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `Nearby API failed: ${response.status}`
+            );
+          }
+
+          const data = await response.json();
+
+          if (!data.success) {
+            throw new Error(
+              data.message ||
+                "Unable to find nearby restaurants"
+            );
+          }
+
+          const nearbyRestaurants =
+            Array.isArray(data.restaurants)
+              ? data.restaurants
+              : [];
+
+          // STRICT 10 KM FILTER
+          setRestaurants(nearbyRestaurants);
+
+          if (nearbyRestaurants.length > 0) {
+            setMessage(
+              `Showing ${nearbyRestaurants.length} restaurant${
+                nearbyRestaurants.length > 1
+                  ? "s"
+                  : ""
+              } within 10 km`
+            );
+          } else {
+            setMessage(
+              "Sorry, we currently do not deliver within 10 km of your location."
+            );
+          }
+
+        } catch (err) {
+          console.error(
+            "Nearby restaurants error:",
+            err
+          );
+
+          // API error aaye to all restaurants
+          setLocationEnabled(false);
+          setUserLocation(null);
+
+          setMessage(
+            "Location search failed. Showing all restaurants."
+          );
+
+          await fetchAllRestaurants();
+        } finally {
+          setLoading(false);
+          setLocationLoading(false);
+        }
+      },
+
+
+      // ERROR / DENIED
+      async (geoError) => {
+        console.warn(
+          "Location error:",
+          geoError
+        );
+
+        setLocationEnabled(false);
+        setUserLocation(null);
+
+        setLocationLoading(false);
+
+        if (
+          geoError.code ===
+          geoError.PERMISSION_DENIED
+        ) {
+          setMessage(
+            "Location permission denied. Showing all restaurants."
+          );
+        } else if (
+          geoError.code ===
+          geoError.TIMEOUT
+        ) {
+          setMessage(
+            "Location request timed out. Showing all restaurants."
+          );
+        } else {
+          setMessage(
+            "Unable to get your location. Showing all restaurants."
+          );
+        }
+
+        await fetchAllRestaurants();
+      },
+
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  };
+
+
+  // ==========================================
+  // LOCATION OFF
+  // ==========================================
+
+  const disableLocation = () => {
+    setLocationEnabled(false);
+
+    setUserLocation(null);
+
+    setMessage(
+      "Location disabled. Showing all restaurants."
+    );
+
+    fetchAllRestaurants();
+  };
+
+
+  // ==========================================
+  // SEARCH
+  // ==========================================
+
+  const filteredRestaurants = restaurants.filter(
+    (rest) => {
+      const query = search
+        .toLowerCase()
+        .trim();
+
+      if (!query) {
+        return true;
+      }
+
+      const name =
+        rest.name?.toLowerCase() || "";
+
+      const address =
+        rest.address?.toLowerCase() || "";
+
+      const cuisine = Array.isArray(
+        rest.cuisine
+      )
+        ? rest.cuisine
+            .join(" ")
+            .toLowerCase()
+        : "";
+
+      return (
+        name.includes(query) ||
+        address.includes(query) ||
+        cuisine.includes(query)
+      );
+    }
   );
 
-  // Skeleton Loader
+
+  // ==========================================
+  // SKELETON
+  // ==========================================
+
   const SkeletonCard = () => (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 animate-pulse">
-      <div className="h-48 bg-gray-200"></div>
+      <div className="h-48 bg-gray-200" />
+
       <div className="p-4 space-y-3">
-        <div className="h-5 bg-gray-200 rounded w-3/4"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-        <div className="flex gap-2">
-          <div className="h-5 bg-gray-200 rounded w-16"></div>
-          <div className="h-5 bg-gray-200 rounded w-16"></div>
-        </div>
+        <div className="h-5 bg-gray-200 rounded w-3/4" />
+
+        <div className="h-4 bg-gray-200 rounded w-1/2" />
+
+        <div className="h-4 bg-gray-200 rounded w-2/3" />
       </div>
     </div>
   );
 
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-8">
-              <div className="h-8 bg-gray-200 rounded w-64 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded w-96 mt-2 animate-pulse"></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
 
   return (
     <>
       <Navbar />
+
       <div className="min-h-screen bg-gray-50">
-        {/* Hero Banner */}
+
+        {/* HERO */}
         <div className="relative bg-gradient-to-r from-green-600 to-emerald-500 py-16 px-4 sm:px-6 lg:px-8">
+
           <div className="max-w-7xl mx-auto text-center text-white">
+
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               🍔 Order Food Online
             </h1>
+
             <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto">
-              Discover the best restaurants near you. Delicious food delivered to your doorstep.
+              Discover the best restaurants and delicious food near you.
             </p>
+
+
+            {/* SEARCH */}
+
             <div className="mt-6 flex justify-center">
+
               <div className="relative w-full max-w-md">
+
                 <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+
                 <input
                   type="text"
-                  placeholder="Search restaurants..."
+                  placeholder="Search restaurants or cuisine..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
                   className="w-full pl-12 pr-4 py-3 bg-white text-gray-800 rounded-full outline-none shadow-lg focus:ring-2 focus:ring-yellow-400"
                 />
+
               </div>
+
             </div>
+
           </div>
+
         </div>
 
-        {/* Main Content */}
+
+        {/* MAIN */}
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Location Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <FaMapMarkerAlt className="text-green-500" />
-              {locationLoading ? (
-                "Getting your location..."
-              ) : userLocation ? (
-                <span>Showing restaurants within <span className="font-semibold">10 km</span> of your location</span>
-              ) : (
-                <span>Showing all restaurants — <button onClick={getUserLocation} className="text-green-600 hover:underline">Enable location</button></span>
-              )}
+
+
+          {/* LOCATION BAR */}
+
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-8">
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+
+              {/* LOCATION TEXT */}
+
+              <div className="flex items-start gap-3">
+
+                <FaMapMarkerAlt className="text-green-600 mt-1" />
+
+                <div>
+
+                  <p className="font-medium text-gray-800">
+
+                    {locationLoading
+                      ? "Getting your location..."
+                      : message}
+
+                  </p>
+
+                  {locationEnabled &&
+                    userLocation && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Location filter is active — 10 km radius
+                      </p>
+                    )}
+
+                </div>
+
+              </div>
+
+
+              {/* BUTTONS */}
+
+              <div className="flex flex-wrap gap-2">
+
+                {!locationEnabled ? (
+
+                  <button
+                    onClick={enableLocation}
+                    disabled={locationLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-full transition text-sm font-medium"
+                  >
+
+                    {locationLoading ? (
+                      <>
+                        <FaSpinner className="animate-spin" />
+                        Getting Location...
+                      </>
+                    ) : (
+                      <>
+                        <FaMapMarkerAlt />
+                        Enable Location
+                      </>
+                    )}
+
+                  </button>
+
+                ) : (
+
+                  <button
+                    onClick={disableLocation}
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-full transition text-sm font-medium"
+                  >
+                    Disable Location
+                  </button>
+
+                )}
+
+              </div>
+
             </div>
-            <button
-              onClick={getUserLocation}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition text-sm font-medium shadow-sm"
-            >
-              <FaMapMarkerAlt className="text-green-500" />
-              Refresh Location
-            </button>
+
           </div>
 
-          {/* Results Count */}
-          <div className="mb-6">
-            <p className="text-sm text-gray-500">
-              {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 && 's'} found
-            </p>
-          </div>
 
-          {/* Restaurant Grid */}
-          {filteredRestaurants.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🍕</div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">No restaurants found</h3>
-              <p className="text-gray-500">
-                {search
-                  ? "Try adjusting your search term."
-                  : "No restaurants available in your area."}
-              </p>
+          {/* ERROR */}
+
+          {error && (
+
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">
+
+              <p>{error}</p>
+
+              <button
+                onClick={fetchAllRestaurants}
+                className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg"
+              >
+                Try Again
+              </button>
+
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredRestaurants.map((rest) => (
-                <RestaurantCard key={rest._id} restaurant={rest} />
-              ))}
-            </div>
+
           )}
+
+
+          {/* RESULT COUNT */}
+
+          {!loading && !error && (
+
+            <div className="mb-6">
+
+              <p className="text-sm text-gray-500">
+
+                {filteredRestaurants.length} restaurant
+                {filteredRestaurants.length !== 1
+                  ? "s"
+                  : ""} found
+
+              </p>
+
+            </div>
+
+          )}
+
+
+          {/* LOADING */}
+
+          {loading ? (
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+              {[...Array(8)].map(
+                (_, index) => (
+                  <SkeletonCard key={index} />
+                )
+              )}
+
+            </div>
+
+          ) : error ? null : filteredRestaurants.length ===
+            0 ? (
+
+            <div className="text-center py-16">
+
+              <div className="text-6xl mb-4">
+                🍕
+              </div>
+
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                No restaurants found
+              </h3>
+
+              <p className="text-gray-500">
+
+                {locationEnabled
+                  ? "There are currently no restaurants available within 10 km of your location."
+                  : search
+                  ? "Try searching for another restaurant or cuisine."
+                  : "No restaurants are currently available."}
+
+              </p>
+
+
+              {locationEnabled && (
+
+                <button
+                  onClick={disableLocation}
+                  className="mt-5 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full"
+                >
+                  Show All Restaurants
+                </button>
+
+              )}
+
+            </div>
+
+          ) : (
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+              {filteredRestaurants.map(
+                (rest) => (
+
+                  <RestaurantCard
+                    key={rest._id}
+                    restaurant={rest}
+                  />
+
+                )
+              )}
+
+            </div>
+
+          )}
+
         </div>
+
       </div>
+
       <Footer />
     </>
   );

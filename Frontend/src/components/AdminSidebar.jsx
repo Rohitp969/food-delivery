@@ -1,183 +1,169 @@
-import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  UtensilsCrossed,
-  ShoppingCart,
-  Users,
   BarChart3,
-  LogOut,
-  Settings,
-  HelpCircle,
-  ChevronLeft,
-  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  LayoutDashboard,
+  LifeBuoy,
+  Receipt,
+  Store,
+  Users,
+  UtensilsCrossed,
   X,
 } from "lucide-react";
-import { FaPlus } from "react-icons/fa";
+import { cx } from "../lib/styles";
 
-const menus = [
-  { name: "Dashboard", path: "/admin/dashboard", icon: <LayoutDashboard size={20} /> },
-  { name: "Food List", path: "/admin/food-list", icon: <UtensilsCrossed size={20} /> },
-  { name: "AddFood", path: "/admin/add-food", icon: <FaPlus size={14} /> },
-  { name: "Orders", path: "/admin/orders", icon: <ShoppingCart size={20} /> },
-  { name: "Users", path: "/admin/users", icon: <Users size={20} /> },
-  { name: "Sales", path: "/admin/sales", icon: <BarChart3 size={20} /> },
-  
+const SECTIONS = [
+  {
+    label: "Overview",
+    items: [
+      { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+      { name: "Sales", path: "/admin/sales", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Manage",
+    items: [
+      { name: "Orders", path: "/admin/orders", icon: Receipt, badge: "newOrders" },
+      { name: "Menu", path: "/admin/food-list", icon: UtensilsCrossed, also: ["/admin/add-food"] },
+      { name: "Customers", path: "/admin/users", icon: Users },
+    ],
+  },
 ];
 
-const AdminSidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const navigate = useNavigate();
+const Brand = ({ collapsed }) => (
+  <div className={cx("flex h-16 items-center gap-2.5 px-4", collapsed && "lg:justify-center lg:px-0")}>
+    <span className="text-2xl leading-none" aria-hidden="true">
+      🍔
+    </span>
+    <span className={cx("font-display text-lg font-bold tracking-tight text-saffron", collapsed && "lg:hidden")}>
+      GoFood
+      <span className="ml-1.5 font-sans text-xs font-medium text-slate-400">Admin</span>
+    </span>
+  </div>
+);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("sidebarCollapsed");
-    if (saved !== null) setIsCollapsed(JSON.parse(saved));
+const NavItem = ({ item, collapsed, count, onNavigate }) => {
+  const Icon = item.icon;
+  const { pathname } = useLocation();
+  // "Add food" lives under Menu, so Menu stays highlighted there
+  const alsoActive = item.also?.some((p) => pathname.startsWith(p));
 
-    const handleMobileToggle = () => setIsMobileOpen(prev => !prev);
-    window.addEventListener("mobileSidebarToggle", handleMobileToggle);
-    const handleResize = () => { if (window.innerWidth >= 1024) setIsMobileOpen(false); };
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("mobileSidebarToggle", handleMobileToggle);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  const toggleSidebar = () => {
-    const newState = !isCollapsed;
-    setIsCollapsed(newState);
-    localStorage.setItem("sidebarCollapsed", JSON.stringify(newState));
-    window.dispatchEvent(new Event("sidebarToggle"));
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"} h-18 px-4 border-b border-gray-700/50 flex-shrink-0`}>
-        <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center w-full" : ""}`}>
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center font-bold shadow-lg shadow-emerald-500/20 flex-shrink-0">
-            <span className="text-white">GF</span>
-          </div>
-          {!isCollapsed && (
-            <div>
-              <h2 className="text-lg font-bold text-white mt-3">GoFood</h2>
-              <p className="text-[10px] text-emerald-400 font-medium tracking-wider uppercase">Admin</p>
-            </div>
+  return (
+    <NavLink
+      to={item.path}
+      end={item.path === "/"}
+      onClick={onNavigate}
+      title={collapsed ? item.name : undefined}
+      className={({ isActive }) =>
+        cx(
+          "group relative flex h-10 items-center gap-3 rounded-lg px-3 text-[15px] font-medium no-underline transition-colors",
+          collapsed && "lg:justify-center lg:px-0",
+          isActive || alsoActive ? "bg-white/10 text-white" : "text-slate-300 hover:bg-white/5 hover:text-white",
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {(isActive || alsoActive) && (
+            <span className="absolute inset-y-2 -left-3 w-[3px] rounded-r bg-saffron" aria-hidden="true" />
           )}
-        </div>
-        {!isCollapsed && (
-          <button onClick={toggleSidebar} className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white">
-            <ChevronLeft size={18} />
-          </button>
-        )}
-      </div>
-
-      {/* Menu */}
-      <div className="flex-1 py-4 px-3 overflow-y-auto">
-        {menus.map((menu) => (
-          <NavLink
-            key={menu.name}
-            to={menu.path}
-            onClick={() => setIsMobileOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${
-                isActive
-                  ? "bg-emerald-600/20 text-emerald-400 shadow-lg shadow-emerald-500/10"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800/50"
-              } ${isCollapsed ? "justify-center" : ""}`
-            }
-          >
-            <span className="flex-shrink-0">{menu.icon}</span>
-            {!isCollapsed && <span className="text-sm font-medium">{menu.name}</span>}
-            {isCollapsed && (
-              <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap border border-gray-700 shadow-xl z-50">
-                {menu.name}
-              </div>
-            )}
-          </NavLink>
-        ))}
-      </div>
-
-      {/* Bottom */}
-      <div className="border-t border-gray-700/50 p-3 flex-shrink-0 space-y-2">
-        <button
-          onClick={handleLogout}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 w-full ${
-            isCollapsed ? "justify-center" : ""
-          } text-red-400 hover:text-red-300 hover:bg-red-500/10 group relative`}
-        >
-          <LogOut size={20} className="flex-shrink-0" />
-          {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
-          {isCollapsed && (
-            <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap border border-gray-700 shadow-xl z-50">
-              Logout
-            </div>
+          <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+          <span className={cx("flex-1", collapsed && "lg:sr-only")}>{item.name}</span>
+          {count > 0 && (
+            <span
+              className={cx(
+                "tabular rounded-full bg-saffron px-1.5 py-px text-xs font-bold text-ink",
+                collapsed && "lg:absolute lg:right-2 lg:top-1 lg:px-1 lg:text-[10px]",
+              )}
+            >
+              {count}
+              <span className="sr-only"> new</span>
+            </span>
           )}
-        </button>
-        {isCollapsed ? (
-          <button onClick={toggleSidebar} className="w-full flex justify-center px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 group relative">
-            <ChevronRight size={18} />
-            <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap border border-gray-700 shadow-xl z-50">Expand</div>
-          </button>
-        ) : (
-          <button onClick={toggleSidebar} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50">
-            <ChevronLeft size={18} />
-            <span className="text-sm font-medium">Collapse</span>
-          </button>
-        )}
-      </div>
-    </div>
+        </>
+      )}
+    </NavLink>
   );
+};
+
+const AdminSidebar = ({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobile, newOrders }) => {
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const onKey = (e) => e.key === "Escape" && onCloseMobile();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen, onCloseMobile]);
+
+  const counts = { newOrders };
 
   return (
     <>
-      {isMobileOpen && (
-        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setIsMobileOpen(false)} />
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-ink/50 lg:hidden animate-fade-in" onClick={onCloseMobile} aria-hidden="true" />
       )}
-      {/* Desktop Sidebar */}
-      <aside className={`hidden lg:block fixed top-0 left-0 h-full bg-gradient-to-b from-gray-900 to-gray-800 text-white z-50 transition-all duration-300 ease-in-out shadow-2xl ${isCollapsed ? "w-20" : "w-64"}`}>
-        <SidebarContent />
-      </aside>
-      {/* Mobile Sidebar */}
-      <aside className={`lg:hidden fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-gray-900 to-gray-800 text-white z-50 transition-transform duration-300 ease-in-out shadow-2xl ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700/50 flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center font-bold shadow-lg shadow-emerald-500/20">
-                <span className="text-white">GF</span>
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-white">GoFood</h1>
-                <p className="text-[10px] text-emerald-400 font-medium tracking-wider uppercase">Admin</p>
+      <aside
+        aria-label="Admin navigation"
+        className={cx(
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-ink transition-[transform,width] duration-200",
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          collapsed && "lg:w-[72px]",
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-white/10">
+          <Brand collapsed={collapsed} />
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            aria-label="Close menu"
+            className="mr-3 flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 hover:text-white lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          {SECTIONS.map((section) => (
+            <div key={section.label} className="mb-5">
+              <p className={cx("mb-1.5 px-3 text-xs font-medium text-slate-500", collapsed && "lg:sr-only")}>
+                {section.label}
+              </p>
+              <div className="space-y-0.5">
+                {section.items.map((item) => (
+                  <NavItem
+                    key={item.path}
+                    item={item}
+                    collapsed={collapsed}
+                    count={counts[item.badge]}
+                    onNavigate={onCloseMobile}
+                  />
+                ))}
               </div>
             </div>
-            <button onClick={() => setIsMobileOpen(false)} className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white">
-              <X size={20} />
-            </button>
-          </div>
-          <div className="flex-1 py-4 px-3 overflow-y-auto">
-            {menus.map((menu) => (
-              <NavLink key={menu.name} to={menu.path} onClick={() => setIsMobileOpen(false)} className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${isActive ? "bg-emerald-600/20 text-emerald-400" : "text-gray-400 hover:text-white hover:bg-gray-800/50"}`
-              }>
-                {menu.icon}
-                <span className="text-sm font-medium">{menu.name}</span>
-              </NavLink>
-            ))}
-          </div>
-          <div className="border-t border-gray-700/50 p-3">
-            <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-red-400 hover:text-red-300 hover:bg-red-500/10">
-              <LogOut size={20} />
-              <span className="text-sm font-medium">Logout</span>
-            </button>
-          </div>
+          ))}
+        </nav>
+
+        <div className="space-y-0.5 border-t border-white/10 px-3 py-3">
+          <NavItem item={{ name: "View store", path: "/", icon: Store }} collapsed={collapsed} onNavigate={onCloseMobile} />
+          <NavItem
+            item={{ name: "Help", path: "/admin/help", icon: LifeBuoy }}
+            collapsed={collapsed}
+            onNavigate={onCloseMobile}
+          />
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            title={collapsed ? "Expand sidebar" : undefined}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={cx(
+              "hidden h-10 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-slate-400 hover:bg-white/5 hover:text-white lg:flex",
+              collapsed && "lg:justify-center lg:px-0",
+            )}
+          >
+            {collapsed ? <ChevronsRight className="h-[18px] w-[18px]" /> : <ChevronsLeft className="h-[18px] w-[18px]" />}
+            {!collapsed && "Collapse"}
+          </button>
         </div>
       </aside>
     </>

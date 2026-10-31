@@ -1,16 +1,20 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import AuthLayout from "../components/AuthLayout";
+import FormAlert from "../components/FormAlert";
+import Button from "../components/ui/Button";
+import { Input, PasswordInput } from "../components/ui/Field";
+import { api } from "../lib/api";
+import { homeFor, saveSession } from "../lib/session";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-
+  const [error, setError] = useState("");
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -21,145 +25,94 @@ const Login = () => {
       ...credentials,
       [e.target.name]: e.target.value,
     });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
+    setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/loginUser`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-      });
+      const json = await api("/api/loginUser", { method: "POST", body: credentials });
+      saveSession(json);
+      toast.success(`Welcome back, ${json.name.split(" ")[0]}`);
 
-      const json = await response.json();
-
-      if (!json.success) {
-        toast.error("Invalid Email or Password");
+      // Return to the page that asked them to log in, if they're allowed there.
+      // Only same-site paths: "//evil.com" would leave the site.
+      const from = location.state?.from || searchParams.get("next");
+      const sameSite = from?.startsWith("/") && !from.startsWith("//");
+      const canReturn = sameSite && (!from.startsWith("/admin") || json.role === "admin");
+      navigate(canReturn ? from : homeFor(json.role), { replace: true });
+    } catch (err) {
+      if (err.data?.needsVerification) {
+        toast.info(err.message);
+        navigate("/verify-email", { state: { email: err.data.email } });
         return;
       }
-
-      localStorage.setItem("authToken", json.authToken);
-      localStorage.setItem("userEmail", json.email);
-      localStorage.setItem("userRole", json.role);
-      localStorage.setItem("userName", json.name);
-
-      toast.success("Login Successful 🎉");
-
-      if (json.role === "admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
-      
-    } catch (err) {
-  console.log(err);
-  toast.error("Invalid Credentials");
-} finally {
-  setLoading(false);
- }
-}
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-pink-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border p-4">
-        <h2 className="text-3xl font-bold text-gray-900">
-          Login to your account
-        </h2>
-
-        <p className="text-gray-500 mt-2 mb-6">
-          Enter your email below to login to your account
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Email</label>
-
-            <input
-              type="email"
-              name="email"
-              placeholder="m@example.com"
-              value={credentials.email}
-              onChange={onChange}
-              required
-              className="w-full h-11 px-4 border rounded-xl outline-none focus:ring-2 focus:ring-pink-500"
-            />
-          </div>
-
-          {/* Password */}
-
-          <div className="mt-2">
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-semibold">Password</label>
-
-              <span className="text-sm text-pink-600 cursor-pointer hover:underline">
-                Forgot Password?
-              </span>
-            </div>
-
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Enter your password"
-                value={credentials.password}
-                onChange={onChange}
-                required
-                className="w-full h-11 px-4 pr-12 border rounded-xl outline-none focus:ring-2 focus:ring-pink-500"
-              />
-
-              {showPassword ? (
-                <EyeOff
-                  size={20}
-                  onClick={() => setShowPassword(false)}
-                  className="absolute right-4 top-3 cursor-pointer text-gray-600"
-                />
-              ) : (
-                <Eye
-                  size={20}
-                  onClick={() => setShowPassword(true)}
-                  className="absolute right-4 top-3 cursor-pointer text-gray-600"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Login Button */}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full h-11 bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 text-white rounded-xl font-semibold flex items-center justify-center transition mt-2 "
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Please wait...
-              </>
-            ) : (
-              "Login"
-            )}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-6">
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-pink-600 hover:text-pink-700 font-semibold"
-          >
-            Signup
+    <AuthLayout
+      title="Log in"
+      description="Welcome back. Enter your email and password to continue."
+      footer={
+        <>
+          New to GoFood?{" "}
+          <Link to="/signup" className="font-semibold text-leaf hover:text-leaf-dark">
+            Create an account
           </Link>
-        </p>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        {searchParams.get("expired") && !error && (
+          <FormAlert tone="info">Your session expired. Log in again to continue.</FormAlert>
+        )}
+
+        <Input
+          id="email"
+          label="Email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          value={credentials.email}
+          onChange={onChange}
+          required
+        />
+
+        <PasswordInput
+          id="password"
+          label="Password"
+          name="password"
+          autoComplete="current-password"
+          value={credentials.password}
+          onChange={onChange}
+          required
+          labelAction={
+            <Link to="/forgot-password" className="text-sm font-semibold text-leaf hover:text-leaf-dark">
+              Forgot password?
+            </Link>
+          }
+        />
+
+        <FormAlert>{error}</FormAlert>
+
+        <Button
+          type="submit"
+          size="lg"
+          loading={loading}
+          disabled={!credentials.email || !credentials.password}
+          className="w-full"
+        >
+          {loading ? "Logging in..." : "Log in"}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 };
 

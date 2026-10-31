@@ -1,409 +1,153 @@
-import React, { useState, useRef, useEffect } from "react";
-import { 
-  Bell, 
-  Search, 
-  Menu, 
-  X, 
-  LogOut, 
-  Settings, 
-  HelpCircle, 
-  ChevronDown,
-  UserCircle,
-  LayoutDashboard,
-  ShoppingBag,
-  Users as UsersIcon,
-  UtensilsCrossed
-} from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ChevronDown, LifeBuoy, LogOut, Menu, Search, Settings, Store, UserRound } from "lucide-react";
 import { toast } from "react-toastify";
+import { Avatar } from "./ui/Display";
+import { clearSession, getSession } from "../lib/session";
+import { cx } from "../lib/styles";
 
-const AdminNavbar = ({ isSidebarCollapsed }) => {
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: "New Order Received", time: "2 min ago", read: false },
-    { id: 2, title: "Payment Successful", time: "15 min ago", read: false },
-    { id: 3, title: "New User Registered", time: "1 hour ago", read: true },
-  ]);
-  
-  const adminName = localStorage.getItem("userName") || "Admin";
-  const adminEmail = localStorage.getItem("userEmail") || "admin@example.com";
-  const adminRole = localStorage.getItem("userRole") || "Administrator";
+const MENU_ITEMS = [
+  { label: "My profile", to: "/admin/profile", icon: UserRound },
+  { label: "Account settings", to: "/admin/settings", icon: Settings },
+  { label: "View store", to: "/", icon: Store },
+  { label: "Help", to: "/admin/help", icon: LifeBuoy },
+];
+
+const AccountMenu = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const profileRef = useRef(null);
-  const notificationRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const { name, email } = getSession();
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setIsProfileOpen(false);
-      }
-      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
-        setIsNotificationOpen(false);
-      }
+    if (!open) return undefined;
+    const onClick = (e) => !ref.current?.contains(e.target) && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [open]);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    toast.success("Logged out successfully");
+  const logout = () => {
+    clearSession();
+    toast.success("You're logged out");
     navigate("/login");
   };
 
-  const handleSearch = (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-    
-    const results = [
-      { name: "Dashboard", path: "/admin/dashboard", icon: <LayoutDashboard size={16} /> },
-      { name: "Orders", path: "/admin/orders", icon: <ShoppingBag size={16} /> },
-      { name: "Users", path: "/admin/users", icon: <UsersIcon size={16} /> },
-      { name: "Food List", path: "/admin/food-list", icon: <UtensilsCrossed size={16} /> },
-    ].filter(item => 
-      item.name.toLowerCase().includes(query)
-    );
-    setSearchResults(results);
-  };
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-2 hover:bg-canvas"
+      >
+        <Avatar name={name} size="sm" />
+        <span className="hidden max-w-[140px] truncate text-sm font-semibold text-ink md:block">{name}</span>
+        <ChevronDown className="hidden h-4 w-4 text-muted md:block" aria-hidden="true" />
+        <span className="sr-only">Open account menu</span>
+      </button>
 
-  const navigateTo = (path) => {
-    navigate(path);
-    setSearchQuery("");
-    setSearchResults([]);
-    setIsMobileSearchOpen(false);
-    setIsProfileOpen(false);
-  };
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white shadow-lg animate-rise-in"
+        >
+          <div className="border-b border-line px-4 py-3">
+            <p className="truncate font-semibold text-ink">{name}</p>
+            <p className="truncate text-sm text-muted">{email}</p>
+          </div>
+          <div className="py-1.5">
+            {MENU_ITEMS.map(({ label, to, icon: Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-2 text-[15px] text-ink no-underline hover:bg-canvas"
+              >
+                <Icon className="h-4 w-4 text-muted" aria-hidden="true" />
+                {label}
+              </Link>
+            ))}
+          </div>
+          <div className="border-t border-line py-1.5">
+            <button
+              type="button"
+              role="menuitem"
+              onClick={logout}
+              className="flex w-full items-center gap-3 px-4 py-2 text-[15px] font-medium text-danger hover:bg-danger-soft"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              Log out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
-  const getPageTitle = () => {
-    const path = location.pathname;
-    const titles = {
-      "/admin/dashboard": "Dashboard",
-      "/admin/orders": "Orders",
-      "/admin/users": "Users",
-      "/admin/food-list": "Food List",
-      "/admin/add-food": "Add Food",
-      "/admin/sales": "Sales",
-      "/admin/profile": "Profile",
-      "/admin/settings": "Settings",
-      "/admin/help": "Help & Support",
-    };
-    return titles[path] || "Admin";
-  };
+const AdminNavbar = ({ onOpenMenu, newOrders }) => {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
 
-  const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({ ...notif, read: true }))
-    );
-    toast.success("All notifications marked as read");
-  };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  // Get initials (e.g., "Rohit Prajapati" → "RP")
-  const getInitials = (name) => {
-    if (!name) return "A";
-    const parts = name.trim().split(" ");
-    if (parts.length === 1) {
-      return parts[0].charAt(0).toUpperCase();
-    }
-    const first = parts[0].charAt(0).toUpperCase();
-    const last = parts[parts.length - 1].charAt(0).toUpperCase();
-    return first + last;
+  const search = (e) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate(`/admin/orders?q=${encodeURIComponent(q)}`);
+    setQuery("");
   };
 
   return (
-    <>
-      <nav
-        className={`fixed h-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 flex items-center justify-between px-4 md:px-8 z-40 transition-all duration-300 ${
-          isSidebarCollapsed ? "lg:left-20" : "lg:left-64"
-        } left-0 right-0 shadow-sm`}
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8">
+      <button
+        type="button"
+        onClick={onOpenMenu}
+        aria-label="Open menu"
+        className="-ml-1 flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-canvas lg:hidden"
       >
-        {/* Left Section */}
-        <div className="flex items-center gap-3 min-w-0">
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent("mobileSidebarToggle"))}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Toggle sidebar"
+        <Menu className="h-5 w-5" />
+      </button>
+
+      <form onSubmit={search} role="search" className="relative hidden max-w-md flex-1 sm:block">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+        <label htmlFor="admin-search" className="sr-only">
+          Search orders
+        </label>
+        <input
+          id="admin-search"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search orders by email, name or order #"
+          className="h-10 w-full rounded-lg border border-transparent bg-canvas pl-9 pr-3 text-sm text-ink placeholder:text-muted focus:border-leaf focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf/25"
+        />
+      </form>
+
+      <div className="ml-auto flex items-center gap-2">
+        {newOrders > 0 && (
+          <Link
+            to="/admin/orders?status=Preparing"
+            className={cx(
+              "flex items-center gap-2 rounded-full bg-saffron-soft px-3 py-1.5 text-sm font-semibold text-amber-900 no-underline ring-1 ring-inset ring-amber-200 hover:bg-saffron/40",
+            )}
           >
-            <Menu size={22} className="text-gray-700" />
-          </button>
-
-          <div className="min-w-0">
-            <h1 className="text-lg md:text-xl font-bold text-gray-800 truncate">
-              {getPageTitle()}
-            </h1>
-            <p className="text-xs text-gray-500 hidden sm:block">
-              Welcome Back 👋
-            </p>
-          </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex items-center gap-2 md:gap-4">
-          {/* Search */}
-          <div className="hidden md:flex relative">
-            <div className="flex items-center bg-gray-100 rounded-xl px-4 py-2.5 w-48 lg:w-72 transition-all focus-within:ring-2 focus-within:ring-green-500 focus-within:bg-white">
-              <Search size={18} className="text-gray-400 flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="ml-2 bg-transparent outline-none w-full text-sm text-gray-700 placeholder-gray-400"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchResults([]);
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-
-            {searchQuery && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                {searchResults.map((result) => (
-                  <button
-                    key={result.path}
-                    onClick={() => navigateTo(result.path)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <span className="text-gray-500">{result.icon}</span>
-                    <span className="text-sm font-medium text-gray-700">{result.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Search */}
-          <button
-            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Search"
-          >
-            <Search size={20} className="text-gray-600" />
-          </button>
-
-          {/* Notifications */}
-          <div className="relative" ref={notificationRef}>
-            <button
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell size={20} className="text-gray-600" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[18px] h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1 animate-pulse">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {isNotificationOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-slideDown">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                  <h3 className="font-bold text-gray-800">Notifications</h3>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-xs text-green-600 hover:text-green-700 font-medium"
-                    >
-                      Mark all read
-                    </button>
-                  )}
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500 text-sm">
-                      No notifications
-                    </div>
-                  ) : (
-                    notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        onClick={() => markAsRead(notif.id)}
-                        className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 ${
-                          !notif.read ? 'bg-green-50/50' : ''
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                            notif.read ? 'bg-gray-300' : 'bg-green-500'
-                          }`} />
-                          <div className="flex-1 min-w-0">
-                            <p className={`text-sm ${notif.read ? 'text-gray-600' : 'text-gray-800 font-medium'}`}>
-                              {notif.title}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-0.5">{notif.time}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="px-4 py-2 border-t border-gray-100 text-center">
-                  <button className="text-sm text-green-600 hover:text-green-700 font-medium">
-                    View all notifications
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ✅ Avatar ONLY – No name/email outside dropdown */}
-          <div className="relative" ref={profileRef}>
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="p-1 rounded-xl hover:bg-gray-100 transition-colors group"
-              aria-label="Profile"
-            >
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-md group-hover:shadow-lg transition-all">
-                {getInitials(adminName)}
-              </div>
-            </button>
-
-            {/* ✅ Dropdown – Shows Full Name, Full Email, and Options */}
-            {isProfileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-slideDown">
-                {/* User Info – Full Name & Email */}
-                <div className="px-4 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0">
-                      {getInitials(adminName)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-800 truncate">
-                        {adminName}
-                      </h4>
-                      <p className="text-xs text-gray-500 truncate">
-                        {adminEmail}
-                      </p>
-                      <span className="inline-block mt-1 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded-full">
-                        {adminRole}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Menu Items – NO Dashboard (already in sidebar) */}
-                <div className="py-2">
-                  <button
-                    onClick={() => navigateTo("/admin/profile")}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-sm text-gray-700"
-                  >
-                    <UserCircle size={16} className="text-gray-400" />
-                    My Profile
-                  </button>
-                  <button
-                    onClick={() => navigateTo("/admin/settings")}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-sm text-gray-700"
-                  >
-                    <Settings size={16} className="text-gray-400" />
-                    Settings
-                  </button>
-                  <button
-                    onClick={() => navigateTo("/admin/help")}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-sm text-gray-700"
-                  >
-                    <HelpCircle size={16} className="text-gray-400" />
-                    Help & Support
-                  </button>
-                </div>
-
-                {/* Logout */}
-                <div className="border-t border-gray-100 py-2">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-sm text-red-600 font-medium"
-                  >
-                    <LogOut size={16} />
-                    Logout
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Search Overlay */}
-      {isMobileSearchOpen && (
-        <div className="md:hidden fixed top-20 left-0 right-0 bg-white border-b border-gray-200 p-4 z-30 shadow-lg animate-slideDown">
-          <div className="flex items-center gap-3">
-            <div className="flex-1 relative">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="w-full pl-11 pr-4 py-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all"
-                autoFocus
-              />
-            </div>
-            <button
-              onClick={() => {
-                setIsMobileSearchOpen(false);
-                setSearchQuery("");
-                setSearchResults([]);
-              }}
-              className="p-2.5 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <X size={20} className="text-gray-600" />
-            </button>
-          </div>
-
-          {searchQuery && searchResults.length > 0 && (
-            <div className="mt-3 bg-white rounded-xl border border-gray-200 overflow-hidden">
-              {searchResults.map((result) => (
-                <button
-                  key={result.path}
-                  onClick={() => navigateTo(result.path)}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0"
-                >
-                  <span className="text-gray-500">{result.icon}</span>
-                  <span className="text-sm font-medium text-gray-700">{result.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.2s ease-out;
-        }
-      `}</style>
-    </>
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-60 motion-reduce:hidden" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+            </span>
+            <span className="tabular">{newOrders}</span> new order{newOrders === 1 ? "" : "s"}
+          </Link>
+        )}
+        <AccountMenu />
+      </div>
+    </header>
   );
 };
 

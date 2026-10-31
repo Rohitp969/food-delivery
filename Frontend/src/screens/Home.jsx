@@ -1,992 +1,332 @@
-// import React, { useState, useEffect } from "react";
-// import Navbar from "../components/Navbar";
-// import Footer from "../components/Footer";
-// import Card from "../components/Card";
-// import { useWishlist } from "../context/WishlistContext"; // if wishlist context exists
-// import { toast } from "react-toastify";
-
-// const API_URL = import.meta.env.VITE_API_URL;
-
-// const Home = () => {
-//   const [loading, setLoading] = useState(true);
-//   const [search, setSearch] = useState("");
-//   const [foodCat, setFoodCat] = useState([]);
-//   const [foodItem, setFoodItem] = useState([]);
-//   const [currentSlide, setCurrentSlide] = useState(0);
-
-//   const slides = [
-//     {
-//       image: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDN8fGJ1cmdlcnxlbnwwfHwwfHx8MA%3D%3D",
-//       title: "Delicious Burgers",
-//       subtitle: "Juicy, fresh, and made just for you.",
-//     },
-//     {
-//       image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200",
-//       title: "Tasty Pizzas",
-//       subtitle: "Authentic Italian flavours, delivered hot.",
-//     },
-//     {
-//       image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=1200",
-//       title: "Healthy Bowls",
-//       subtitle: "Fresh ingredients for a balanced meal.",
-//     },
-//   ];
-
-//   const loadData = async () => {
-//     try {
-//       const response = await fetch(`${API_URL}/api/foodData`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//       });
-//       const data = await response.json();
-//       setFoodItem(data[0] || []);
-//       setFoodCat(data[1] || []);
-//     } catch (error) {
-//       console.error(error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     loadData();
-//   }, []);
-
-//   // Auto slide
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       setCurrentSlide((prev) => (prev + 1) % slides.length);
-//     }, 4000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   const nextSlide = () => {
-//     setCurrentSlide((prev) => (prev + 1) % slides.length);
-//   };
-
-//   const prevSlide = () => {
-//     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="flex justify-center items-center h-screen bg-gray-50">
-//         <div className="flex flex-col items-center gap-3">
-//           <div className="w-14 h-14 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-//           <p className="text-gray-500 font-medium">Loading delicious meals...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="bg-gray-50 font-sans">
-//       <Navbar />
-
-//       {/* Hero / Carousel Section – Professional */}
-//       <section className="relative w-full h-[250px] sm:h-[280px] md:h-[380px] overflow-hidden">
-//         {slides.map((slide, idx) => (
-//           <div
-//             key={idx}
-//             className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-//               idx === currentSlide ? "opacity-100" : "opacity-0"
-//             }`}
-//           >
-//             <img
-//               src={slide.image}
-//               alt={slide.title}
-//               className="w-full h-full object-cover"
-//             />
-//             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-//             <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
-//               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold drop-shadow-lg mb-2">
-//                 {slide.title}
-//               </h1>
-//               <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-2xl">
-//                 {slide.subtitle}
-//               </p>
-//             </div>
-//           </div>
-//         ))}
-
-//         {/* Search Bar – Floating Center */}
-//         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[90%] sm:w-3/4 md:w-1/2 z-20">
-//           <div className="relative">
-//             <input
-//               type="search"
-//               placeholder="Search your favourite food..."
-//               value={search}
-//               onChange={(e) => setSearch(e.target.value)}
-//               className="w-full px-6 py-3.5 rounded-2xl shadow-2xl outline-none text-gray-800 bg-white/95 backdrop-blur-sm border border-white/20 focus:ring-2 focus:ring-yellow-400 transition"
-//             />
-//             <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-yellow-400 hover:bg-yellow-500 text-slate-900 px-5 py-2 rounded-xl font-semibold transition shadow-md">
-//               Search
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Carousel Controls */}
-//         <button
-//           onClick={prevSlide}
-//           className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition z-10"
-//         >
-//           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-//           </svg>
-//         </button>
-//         <button
-//           onClick={nextSlide}
-//           className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition z-10"
-//         >
-//           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-//           </svg>
-//         </button>
-
-//         {/* Dots Indicator */}
-//         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-//           {slides.map((_, idx) => (
-//             <button
-//               key={idx}
-//               onClick={() => setCurrentSlide(idx)}
-//               className={`w-2.5 h-2.5 rounded-full transition ${
-//                 idx === currentSlide ? "bg-yellow-400 w-8" : "bg-white/60"
-//               }`}
-//             />
-//           ))}
-//         </div>
-//       </section>
-
-//       {/* Food Categories Section */}
-//       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-//         {foodCat.length > 0 ? (
-//           foodCat.map((category) => {
-//             const filteredItems = foodItem.filter(
-//               (item) =>
-//                 item.CategoryName === category.CategoryName &&
-//                 item.name.toLowerCase().includes(search.toLowerCase())
-//             );
-
-//             if (filteredItems.length === 0) return null;
-
-//             return (
-//               <div key={category._id} className="mb-12">
-//                 <div className="flex items-center gap-3 mb-4">
-//                   <div className="h-8 w-1.5 bg-yellow-500 rounded-full"></div>
-//                   <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-tight">
-//                     {category.CategoryName}
-//                   </h2>
-//                   <span className="text-sm text-gray-400 ml-2">
-//                     ({filteredItems.length} items)
-//                   </span>
-//                 </div>
-//                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-//                   {filteredItems.map((item) => (
-//                     <Card
-//                       key={item._id}
-//                       foodItem={item}
-//                       options={item.options[0]}
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-//             );
-//           })
-//         ) : (
-//           <div className="text-center py-20">
-//             <p className="text-gray-500 text-lg">No categories available</p>
-//           </div>
-//         )}
-
-//         {/* No Search Results */}
-//         {foodItem.filter((item) =>
-//           item.name.toLowerCase().includes(search.toLowerCase())
-//         ).length === 0 && search.length > 0 && (
-//           <div className="text-center py-16">
-//             <div className="text-6xl mb-4">😕</div>
-//             <h3 className="text-2xl font-semibold text-gray-700">
-//               No Food Found
-//             </h3>
-//             <p className="text-gray-500 mt-2">
-//               Try adjusting your search term.
-//             </p>
-//           </div>
-//         )}
-//       </section>
-
-//       <Footer />
-//     </div>
-//   );
-// };
-
-// export default Home;
-
-
-
-// import React, { useState, useEffect } from "react";
-// import { Link } from "react-router-dom";
-// import Navbar from "../components/Navbar";
-// import Footer from "../components/Footer";
-// import RestaurantCard from "../components/RestaurantCard";
-// import { FaSearch, FaSpinner, FaMapMarkerAlt, FaFilter, FaUtensils } from "react-icons/fa";
-
-// const API_URL = import.meta.env.VITE_API_URL;
-
-// const Home = () => {
-//   const [restaurants, setRestaurants] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [search, setSearch] = useState("");
-//   const [userLocation, setUserLocation] = useState(null);
-//   const [locationLoading, setLocationLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   useEffect(() => {
-//     getUserLocation();
-//   }, []);
-
-//   const getUserLocation = () => {
-//     setLocationLoading(true);
-//     if (navigator.geolocation) {
-//       navigator.geolocation.getCurrentPosition(
-//         (position) => {
-//           const lat = position.coords.latitude;
-//           const lng = position.coords.longitude;
-//           setUserLocation({ lat, lng });
-//           fetchRestaurants(lat, lng);
-//         },
-//         (error) => {
-//           console.warn("Location access denied. Showing all restaurants.");
-//           fetchRestaurants(null, null);
-//           setLocationLoading(false);
-//         }
-//       );
-//     } else {
-//       fetchRestaurants(null, null);
-//       setLocationLoading(false);
-//     }
-//   };
-
-//   const fetchRestaurants = async (lat, lng) => {
-//     setLoading(true);
-//     setError(null);
-//     try {
-//       let url = `${API_URL}/api/restaurants`;
-//       if (lat && lng) {
-//         url += `/nearby?lat=${lat}&lng=${lng}&radius=10`;
-//       }
-//       const res = await fetch(url);
-//       const data = await res.json();
-//       if (data.success) {
-//         setRestaurants(data.restaurants || []);
-//       } else {
-//         setError(data.message || "Failed to load restaurants");
-//       }
-//     } catch (err) {
-//       console.error(err);
-//       setError("Failed to load restaurants");
-//     } finally {
-//       setLoading(false);
-//       setLocationLoading(false);
-//     }
-//   };
-
-//   const filteredRestaurants = restaurants.filter((rest) =>
-//     rest.name.toLowerCase().includes(search.toLowerCase())
-//   );
-
-//   // Skeleton Loader
-//   const SkeletonCard = () => (
-//     <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 animate-pulse">
-//       <div className="h-48 bg-gray-200"></div>
-//       <div className="p-4 space-y-3">
-//         <div className="h-5 bg-gray-200 rounded w-3/4"></div>
-//         <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-//         <div className="flex gap-2">
-//           <div className="h-5 bg-gray-200 rounded w-16"></div>
-//           <div className="h-5 bg-gray-200 rounded w-16"></div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-
-//   if (loading) {
-//     return (
-//       <>
-//         <Navbar />
-//         <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-//           <div className="max-w-7xl mx-auto">
-//             <div className="mb-8">
-//               <div className="h-8 bg-gray-200 rounded w-64 animate-pulse"></div>
-//               <div className="h-4 bg-gray-200 rounded w-96 mt-2 animate-pulse"></div>
-//             </div>
-//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-//               {[...Array(8)].map((_, i) => (
-//                 <SkeletonCard key={i} />
-//               ))}
-//             </div>
-//           </div>
-//         </div>
-//         <Footer />
-//       </>
-//     );
-//   }
-
-//   return (
-//     <>
-//       <Navbar />
-//       <div className="min-h-screen bg-gray-50">
-//         {/* Hero Banner */}
-//         <div className="relative bg-gradient-to-r from-green-600 to-emerald-500 py-16 px-4 sm:px-6 lg:px-8">
-//           <div className="max-w-7xl mx-auto text-center text-white">
-//             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-//               🍔 Order Food Online
-//             </h1>
-//             <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto">
-//               Discover the best restaurants near you. Delicious food delivered to your doorstep.
-//             </p>
-//             <div className="mt-6 flex justify-center">
-//               <div className="relative w-full max-w-md">
-//                 <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-//                 <input
-//                   type="text"
-//                   placeholder="Search restaurants..."
-//                   value={search}
-//                   onChange={(e) => setSearch(e.target.value)}
-//                   className="w-full pl-12 pr-4 py-3 bg-white text-gray-800 rounded-full outline-none shadow-lg focus:ring-2 focus:ring-yellow-400"
-//                 />
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Main Content */}
-//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//           {/* Location Bar */}
-//           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-//             <div className="flex items-center gap-2 text-sm text-gray-600">
-//               <FaMapMarkerAlt className="text-green-500" />
-//               {locationLoading ? (
-//                 "Getting your location..."
-//               ) : userLocation ? (
-//                 <span>Showing restaurants within <span className="font-semibold">10 km</span> of your location</span>
-//               ) : (
-//                 <span>Showing all restaurants — <button onClick={getUserLocation} className="text-green-600 hover:underline">Enable location</button></span>
-//               )}
-//             </div>
-//             <button
-//               onClick={getUserLocation}
-//               className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition text-sm font-medium shadow-sm"
-//             >
-//               <FaMapMarkerAlt className="text-green-500" />
-//               Refresh Location
-//             </button>
-//           </div>
-
-//           {/* Results Count */}
-//           <div className="mb-6">
-//             <p className="text-sm text-gray-500">
-//               {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 && 's'} found
-//             </p>
-//           </div>
-
-//           {/* Restaurant Grid */}
-//           {filteredRestaurants.length === 0 ? (
-//             <div className="text-center py-16">
-//               <div className="text-6xl mb-4">🍕</div>
-//               <h3 className="text-2xl font-bold text-gray-800 mb-2">No restaurants found</h3>
-//               <p className="text-gray-500">
-//                 {search
-//                   ? "Try adjusting your search term."
-//                   : "No restaurants available in your area."}
-//               </p>
-//             </div>
-//           ) : (
-//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-//               {filteredRestaurants.map((rest) => (
-//                 <RestaurantCard key={rest._id} restaurant={rest} />
-//               ))}
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//       <Footer />
-//     </>
-//   );
-// };
-
-// export default Home;
-
-
-
-
-
-import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import React, { useMemo, useState } from "react";
+import { LocateFixed, Loader2, Search, Star, Store, X } from "lucide-react";
+import StoreLayout from "../components/store/StoreLayout";
 import RestaurantCard from "../components/RestaurantCard";
-import {
-  FaSearch,
-  FaMapMarkerAlt,
-  FaSpinner,
-} from "react-icons/fa";
-
-const API_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:5000"
-).replace(/\/$/, "");
-
-const Home = () => {
-  const [restaurants, setRestaurants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-
-  const [userLocation, setUserLocation] = useState(null);
-  const [locationLoading, setLocationLoading] = useState(false);
-
-  const [locationEnabled, setLocationEnabled] = useState(false);
-
-  const [message, setMessage] = useState(
-    "Showing all restaurants"
-  );
-
-  const [error, setError] = useState(null);
-
-
-  // ==========================================
-  // FETCH ALL RESTAURANTS
-  // ==========================================
-
-  const fetchAllRestaurants = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(
-        `${API_URL}/api/restaurants`
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Server error: ${response.status}`
-        );
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setRestaurants(
-          Array.isArray(data.restaurants)
-            ? data.restaurants
-            : []
-        );
-
-        setMessage("Showing all restaurants");
-      } else {
-        throw new Error(
-          data.message || "Failed to load restaurants"
-        );
-      }
-    } catch (err) {
-      console.error("All restaurants error:", err);
-
-      setRestaurants([]);
-
-      setError(
-        "Unable to load restaurants. Please check your backend server."
-      );
-    } finally {
-      setLoading(false);
-      setLocationLoading(false);
-    }
-  };
-
-
-  // ==========================================
-  // PAGE LOAD
-  // LOCATION OFF BY DEFAULT
-  // ==========================================
-
-  useEffect(() => {
-    fetchAllRestaurants();
-  }, []);
-
-
-  // ==========================================
-  // LOCATION ON
-  // ==========================================
-
-  const enableLocation = () => {
-    setError(null);
-
-    if (!navigator.geolocation) {
-      setMessage(
-        "Location is not supported. Showing all restaurants."
-      );
-
-      fetchAllRestaurants();
-      return;
-    }
-
-    setLocationLoading(true);
-    setLoading(true);
-
-    setMessage("Getting your location...");
-
-    navigator.geolocation.getCurrentPosition(
-
-      // SUCCESS
-      async (position) => {
-        const lat = Number(
-          position.coords.latitude
-        );
-
-        const lng = Number(
-          position.coords.longitude
-        );
-
-        console.log("User location:", {
-          lat,
-          lng,
-        });
-
-        setUserLocation({
-          lat,
-          lng,
-        });
-
-        setLocationEnabled(true);
-
-        try {
-          const response = await fetch(
-            `${API_URL}/api/restaurants/nearby?lat=${encodeURIComponent(
-              lat
-            )}&lng=${encodeURIComponent(
-              lng
-            )}&radius=10`
-          );
-
-          if (!response.ok) {
-            throw new Error(
-              `Nearby API failed: ${response.status}`
-            );
-          }
-
-          const data = await response.json();
-
-          if (!data.success) {
-            throw new Error(
-              data.message ||
-                "Unable to find nearby restaurants"
-            );
-          }
-
-          const nearbyRestaurants =
-            Array.isArray(data.restaurants)
-              ? data.restaurants
-              : [];
-
-          // STRICT 10 KM FILTER
-          setRestaurants(nearbyRestaurants);
-
-          if (nearbyRestaurants.length > 0) {
-            setMessage(
-              `Showing ${nearbyRestaurants.length} restaurant${
-                nearbyRestaurants.length > 1
-                  ? "s"
-                  : ""
-              } within 10 km`
-            );
-          } else {
-            setMessage(
-              "Sorry, we currently do not deliver within 10 km of your location."
-            );
-          }
-
-        } catch (err) {
-          console.error(
-            "Nearby restaurants error:",
-            err
-          );
-
-          // API error aaye to all restaurants
-          setLocationEnabled(false);
-          setUserLocation(null);
-
-          setMessage(
-            "Location search failed. Showing all restaurants."
-          );
-
-          await fetchAllRestaurants();
-        } finally {
-          setLoading(false);
-          setLocationLoading(false);
-        }
-      },
-
-
-      // ERROR / DENIED
-      async (geoError) => {
-        console.warn(
-          "Location error:",
-          geoError
-        );
-
-        setLocationEnabled(false);
-        setUserLocation(null);
-
-        setLocationLoading(false);
-
-        if (
-          geoError.code ===
-          geoError.PERMISSION_DENIED
-        ) {
-          setMessage(
-            "Location permission denied. Showing all restaurants."
-          );
-        } else if (
-          geoError.code ===
-          geoError.TIMEOUT
-        ) {
-          setMessage(
-            "Location request timed out. Showing all restaurants."
-          );
-        } else {
-          setMessage(
-            "Unable to get your location. Showing all restaurants."
-          );
-        }
-
-        await fetchAllRestaurants();
-      },
-
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000,
-      }
-    );
-  };
-
-
-  // ==========================================
-  // LOCATION OFF
-  // ==========================================
-
-  const disableLocation = () => {
-    setLocationEnabled(false);
-
-    setUserLocation(null);
-
-    setMessage(
-      "Location disabled. Showing all restaurants."
-    );
-
-    fetchAllRestaurants();
-  };
-
-
-  // ==========================================
-  // SEARCH
-  // ==========================================
-
-  const filteredRestaurants = restaurants.filter(
-    (rest) => {
-      const query = search
-        .toLowerCase()
-        .trim();
-
-      if (!query) {
-        return true;
-      }
-
-      const name =
-        rest.name?.toLowerCase() || "";
-
-      const address =
-        rest.address?.toLowerCase() || "";
-
-      const cuisine = Array.isArray(
-        rest.cuisine
-      )
-        ? rest.cuisine
-            .join(" ")
-            .toLowerCase()
-        : "";
-
-      return (
-        name.includes(query) ||
-        address.includes(query) ||
-        cuisine.includes(query)
-      );
-    }
-  );
-
-
-  // ==========================================
-  // SKELETON
-  // ==========================================
-
-  const SkeletonCard = () => (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 animate-pulse">
-      <div className="h-48 bg-gray-200" />
-
-      <div className="p-4 space-y-3">
-        <div className="h-5 bg-gray-200 rounded w-3/4" />
-
-        <div className="h-4 bg-gray-200 rounded w-1/2" />
-
-        <div className="h-4 bg-gray-200 rounded w-2/3" />
-      </div>
-    </div>
-  );
-
+import Button from "../components/ui/Button";
+import { EmptyState, Skeleton } from "../components/ui/Display";
+import { api } from "../lib/api";
+import { CATEGORY_IMAGES } from "../lib/cart";
+import { useFetch } from "../lib/useFetch";
+import { cx } from "../lib/styles";
+
+const SORTS = {
+  recommended: { label: "Top rated", fn: (a, b) => (b.rating || 0) - (a.rating || 0) },
+  fastest: { label: "Fastest delivery", fn: (a, b) => parseInt(a.deliveryTime) - parseInt(b.deliveryTime) },
+  fee: { label: "Lowest delivery fee", fn: (a, b) => (a.deliveryFee || 0) - (b.deliveryFee || 0) },
+};
+
+// The city most restaurants list in their address ("Sector 18, Noida" -> "Noida")
+const mainCity = (restaurants) => {
+  const counts = {};
+  restaurants.forEach((r) => {
+    const city = r.address?.includes(",") ? r.address.split(",").pop().trim() : "";
+    if (city) counts[city] = (counts[city] || 0) + 1;
+  });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+};
+
+const Hero = ({ restaurants, search, onSearch, location, onLocate, onClearLocation, locating }) => {
+  const city = mainCity(restaurants);
+  const topRated = [...restaurants].sort(SORTS.recommended.fn)[0];
 
   return (
-    <>
-      <Navbar />
+    <section className="bg-ink text-white">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-14 pt-10 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:px-8 lg:pb-20 lg:pt-14">
+        <div>
+          {city && <p className="text-[15px] font-medium text-saffron">Delivering across {city}</p>}
+          <h1 className="mt-3 max-w-xl font-display text-[40px] font-semibold leading-[1.05] tracking-tight sm:text-[52px]">
+            Hungry? Hot food is minutes away.
+          </h1>
+          <p className="mt-4 max-w-lg text-[17px] leading-relaxed text-slate-300">
+            {restaurants.length
+              ? `Order from ${restaurants.length} restaurants near you, from biryani and dosa to burgers and pizza.`
+              : "Biryani, dosa, burgers and pizza from restaurants near you."}{" "}
+            Pay online or in cash at the door.
+          </p>
 
-      <div className="min-h-screen bg-gray-50">
-
-        {/* HERO */}
-        <div className="relative bg-gradient-to-r from-green-600 to-emerald-500 py-16 px-4 sm:px-6 lg:px-8">
-
-          <div className="max-w-7xl mx-auto text-center text-white">
-
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              🍔 Order Food Online
-            </h1>
-
-            <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto">
-              Discover the best restaurants and delicious food near you.
-            </p>
-
-
-            {/* SEARCH */}
-
-            <div className="mt-6 flex justify-center">
-
-              <div className="relative w-full max-w-md">
-
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-
-                <input
-                  type="text"
-                  placeholder="Search restaurants or cuisine..."
-                  value={search}
-                  onChange={(e) =>
-                    setSearch(e.target.value)
-                  }
-                  className="w-full pl-12 pr-4 py-3 bg-white text-gray-800 rounded-full outline-none shadow-lg focus:ring-2 focus:ring-yellow-400"
-                />
-
-              </div>
-
+          <form
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              document.getElementById("restaurants")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="mt-8 flex max-w-xl flex-col gap-2 rounded-xl bg-white p-2 shadow-xl sm:flex-row sm:items-center"
+          >
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+              <label htmlFor="home-search" className="sr-only">
+                Search restaurants or cuisines
+              </label>
+              <input
+                id="home-search"
+                type="search"
+                value={search}
+                onChange={(e) => onSearch(e.target.value)}
+                placeholder="Search restaurants or cuisines"
+                className="h-12 w-full rounded-lg bg-transparent pl-11 pr-3 text-[16px] text-ink placeholder:text-muted/80 focus:outline-none"
+              />
             </div>
-
-          </div>
-
+            <button
+              type="button"
+              onClick={location ? onClearLocation : onLocate}
+              disabled={locating}
+              className="flex h-12 items-center justify-center gap-2 rounded-lg bg-leaf px-4 text-[15px] font-semibold text-white hover:bg-leaf-dark disabled:opacity-70"
+            >
+              {locating ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <LocateFixed className="h-4 w-4" aria-hidden="true" />
+              )}
+              {locating ? "Finding you..." : location ? "Show all restaurants" : "Restaurants near me"}
+            </button>
+          </form>
         </div>
 
-
-        {/* MAIN */}
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-
-          {/* LOCATION BAR */}
-
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-8">
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-
-
-              {/* LOCATION TEXT */}
-
-              <div className="flex items-start gap-3">
-
-                <FaMapMarkerAlt className="text-green-600 mt-1" />
-
-                <div>
-
-                  <p className="font-medium text-gray-800">
-
-                    {locationLoading
-                      ? "Getting your location..."
-                      : message}
-
-                  </p>
-
-                  {locationEnabled &&
-                    userLocation && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Location filter is active — 10 km radius
-                      </p>
-                    )}
-
-                </div>
-
-              </div>
-
-
-              {/* BUTTONS */}
-
-              <div className="flex flex-wrap gap-2">
-
-                {!locationEnabled ? (
-
-                  <button
-                    onClick={enableLocation}
-                    disabled={locationLoading}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-full transition text-sm font-medium"
-                  >
-
-                    {locationLoading ? (
-                      <>
-                        <FaSpinner className="animate-spin" />
-                        Getting Location...
-                      </>
-                    ) : (
-                      <>
-                        <FaMapMarkerAlt />
-                        Enable Location
-                      </>
-                    )}
-
-                  </button>
-
-                ) : (
-
-                  <button
-                    onClick={disableLocation}
-                    className="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-full transition text-sm font-medium"
-                  >
-                    Disable Location
-                  </button>
-
-                )}
-
-              </div>
-
-            </div>
-
+        {/* Real dishes from the menu */}
+        <div className="relative hidden h-[400px] md:block" aria-hidden="true">
+          <div className="grid h-full grid-cols-[1.2fr_1fr] grid-rows-2 gap-3">
+            <img src="/images/Burger/Burger1.jpg" alt="" className="row-span-2 h-full w-full rounded-2xl object-cover" />
+            <img src="/images/Pizza/pizza2.jpg" alt="" className="h-full w-full rounded-2xl object-cover" />
+            <img src="/images/South Indian/South Indian2.jpg" alt="" className="h-full w-full rounded-2xl object-cover" />
           </div>
-
-
-          {/* ERROR */}
-
-          {error && (
-
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-6">
-
-              <p>{error}</p>
-
-              <button
-                onClick={fetchAllRestaurants}
-                className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg"
-              >
-                Try Again
-              </button>
-
-            </div>
-
-          )}
-
-
-          {/* RESULT COUNT */}
-
-          {!loading && !error && (
-
-            <div className="mb-6">
-
-              <p className="text-sm text-gray-500">
-
-                {filteredRestaurants.length} restaurant
-                {filteredRestaurants.length !== 1
-                  ? "s"
-                  : ""} found
-
-              </p>
-
-            </div>
-
-          )}
-
-
-          {/* LOADING */}
-
-          {loading ? (
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-
-              {[...Array(8)].map(
-                (_, index) => (
-                  <SkeletonCard key={index} />
-                )
-              )}
-
-            </div>
-
-          ) : error ? null : filteredRestaurants.length ===
-            0 ? (
-
-            <div className="text-center py-16">
-
-              <div className="text-6xl mb-4">
-                🍕
+          {topRated && (
+            <div className="absolute -bottom-5 left-6 flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-ink shadow-xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-leaf text-white">
+                <Star className="h-5 w-5 fill-current" />
+              </span>
+              <div>
+                <p className="text-xs text-muted">Top rated near you</p>
+                <p className="font-semibold">
+                  {topRated.name}, {Number(topRated.rating).toFixed(1)}
+                </p>
               </div>
-
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                No restaurants found
-              </h3>
-
-              <p className="text-gray-500">
-
-                {locationEnabled
-                  ? "There are currently no restaurants available within 10 km of your location."
-                  : search
-                  ? "Try searching for another restaurant or cuisine."
-                  : "No restaurants are currently available."}
-
-              </p>
-
-
-              {locationEnabled && (
-
-                <button
-                  onClick={disableLocation}
-                  className="mt-5 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full"
-                >
-                  Show All Restaurants
-                </button>
-
-              )}
-
             </div>
-
-          ) : (
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-
-              {filteredRestaurants.map(
-                (rest) => (
-
-                  <RestaurantCard
-                    key={rest._id}
-                    restaurant={rest}
-                  />
-
-                )
-              )}
-
-            </div>
-
           )}
-
         </div>
-
       </div>
+    </section>
+  );
+};
 
-      <Footer />
-    </>
+const CategoryRail = ({ categories, selected, onSelect }) => (
+  <section aria-labelledby="cravings" className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+    <h2 id="cravings" className="font-display text-2xl font-semibold tracking-tight text-ink">
+      What are you craving?
+    </h2>
+    <div className="-mx-4 mt-5 flex gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+      {categories.map((category) => {
+        const active = selected === category;
+        return (
+          <button
+            key={category}
+            type="button"
+            onClick={() => onSelect(active ? "" : category)}
+            aria-pressed={active}
+            className="group flex w-24 shrink-0 flex-col items-center gap-2 rounded-xl p-1"
+          >
+            <span
+              className={cx(
+                "block h-20 w-20 overflow-hidden rounded-full ring-2 ring-offset-2 ring-offset-canvas transition",
+                active ? "ring-leaf" : "ring-transparent group-hover:ring-line",
+              )}
+            >
+              <img src={CATEGORY_IMAGES[category] || "/images/Starter/Starter2.jpg"} alt="" className="h-full w-full object-cover" />
+            </span>
+            <span className={cx("text-sm font-medium", active ? "text-leaf-dark" : "text-ink")}>
+              {category.replace("/Rice", "")}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  </section>
+);
+
+const Home = () => {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [sort, setSort] = useState("recommended");
+  const [location, setLocation] = useState(null);
+  const [locating, setLocating] = useState(false);
+  const [locationNote, setLocationNote] = useState("");
+
+  const { data, error, loading, reload } = useFetch(
+    () =>
+      api(
+        location
+          ? `/api/restaurants/nearby?lat=${location.lat}&lng=${location.lng}&radius=10`
+          : "/api/restaurants",
+      ),
+    [location?.lat, location?.lng],
+  );
+  const restaurants = useMemo(() => data?.restaurants || [], [data]);
+
+  const locate = () => {
+    if (!navigator.geolocation) {
+      setLocationNote("Your browser can't share its location, so we're showing every restaurant.");
+      return;
+    }
+    setLocating(true);
+    setLocationNote("");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      (err) => {
+        setLocating(false);
+        setLocationNote(
+          err.code === err.PERMISSION_DENIED
+            ? "Location access is blocked. Allow it in your browser to see restaurants near you."
+            : "We couldn't find your location, so we're showing every restaurant.",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
+  const clearLocation = () => {
+    setLocation(null);
+    setLocationNote("");
+  };
+
+  const categories = useMemo(
+    () => [...new Set(restaurants.flatMap((r) => r.categories || []))].sort(),
+    [restaurants],
+  );
+
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return restaurants
+      .filter(
+        (r) =>
+          (!term || [r.name, r.address, ...(r.cuisine || []), ...(r.categories || [])].some((v) => v?.toLowerCase().includes(term))) &&
+          (!category || r.categories?.includes(category)),
+      )
+      .sort(SORTS[sort].fn);
+  }, [restaurants, search, category, sort]);
+
+  const heading = location
+    ? "Restaurants within 10 km"
+    : category
+      ? `Restaurants serving ${category.replace("/Rice", "")}`
+      : "All restaurants";
+
+  return (
+    <StoreLayout cartBar>
+      <Hero
+        restaurants={restaurants}
+        search={search}
+        onSearch={setSearch}
+        location={location}
+        onLocate={locate}
+        onClearLocation={clearLocation}
+        locating={locating}
+      />
+
+      {categories.length > 0 && <CategoryRail categories={categories} selected={category} onSelect={setCategory} />}
+
+      <section id="restaurants" aria-labelledby="restaurants-heading" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 id="restaurants-heading" className="font-display text-2xl font-semibold tracking-tight text-ink">
+              {heading}
+            </h2>
+            {!loading && (
+              <p className="tabular mt-1 text-[15px] text-muted">
+                {visible.length} {visible.length === 1 ? "place" : "places"} to order from
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="sort" className="text-sm text-muted">
+              Sort by
+            </label>
+            <select
+              id="sort"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="h-10 rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink focus:border-leaf focus:outline-none"
+            >
+              {Object.entries(SORTS).map(([key, s]) => (
+                <option key={key} value={key}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {(search || category || locationNote) && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {locationNote && <p className="w-full text-sm text-amber-800">{locationNote}</p>}
+            {search && (
+              <button type="button" onClick={() => setSearch("")} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm text-ink ring-1 ring-line hover:bg-canvas">
+                “{search}” <X className="h-3.5 w-3.5" aria-label="Clear search" />
+              </button>
+            )}
+            {category && (
+              <button type="button" onClick={() => setCategory("")} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm text-ink ring-1 ring-line hover:bg-canvas">
+                {category.replace("/Rice", "")} <X className="h-3.5 w-3.5" aria-label="Clear category" />
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className="mt-6">
+          {loading && !data ? (
+            <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" role="status" aria-label="Loading restaurants">
+              {Array.from({ length: 8 }, (_, i) => (
+                <div key={i}>
+                  <Skeleton className="aspect-[16/10] w-full rounded-xl" />
+                  <Skeleton className="mt-3 h-5 w-2/3" />
+                  <Skeleton className="mt-2 h-4 w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : error && !data ? (
+            <div className="rounded-xl border border-line bg-white">
+              <EmptyState
+                icon={Store}
+                title="Couldn't load restaurants"
+                description={error}
+                action={<Button variant="secondary" onClick={reload}>Try again</Button>}
+              />
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="rounded-xl border border-line bg-white">
+              <EmptyState
+                icon={Store}
+                title={location ? "We don't deliver to your area yet" : "No restaurants match"}
+                description={
+                  location
+                    ? "There are no GoFood restaurants within 10 km of you. You can still browse every restaurant."
+                    : "Try a different dish or cuisine, or clear your filters."
+                }
+                action={
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      clearLocation();
+                      setSearch("");
+                      setCategory("");
+                    }}
+                  >
+                    Show all restaurants
+                  </Button>
+                }
+              />
+            </div>
+          ) : (
+            <div className={cx("grid gap-x-6 gap-y-10 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", loading && "opacity-60")}>
+              {visible.map((r) => (
+                <RestaurantCard key={r._id} restaurant={r} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </StoreLayout>
   );
 };
 

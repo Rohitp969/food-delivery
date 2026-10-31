@@ -1,347 +1,253 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/ContextReducer";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
-  FaShoppingCart,
-  FaBars,
-  FaTimes,
-  FaHome,
-  FaClipboardList,
-  FaSignOutAlt,
-  FaUser,
-  FaHeart,
-  FaMapMarkerAlt,
-  FaCog,
-  FaBell,
-  FaQuestionCircle,
-} from "react-icons/fa";
+  ChevronDown,
+  Heart,
+  LayoutDashboard,
+  LifeBuoy,
+  LogOut,
+  Menu,
+  Receipt,
+  Settings,
+  ShoppingBag,
+  UserRound,
+  X,
+} from "lucide-react";
+import { useCart } from "../context/ContextReducer";
+import { useWishlist } from "../context/WishlistContext";
+import { Avatar } from "./ui/Display";
+import { clearSession, getSession } from "../lib/session";
+import { buttonStyles, cx } from "../lib/styles";
+
+const ACCOUNT_LINKS = [
+  { to: "/profile", label: "Your account", icon: UserRound },
+  { to: "/myorder", label: "My orders", icon: Receipt },
+  { to: "/wishlist", label: "Saved dishes", icon: Heart },
+  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/help", label: "Help", icon: LifeBuoy },
+];
+
+const navLinkClass = ({ isActive }) =>
+  cx(
+    "rounded-lg px-3 py-2 text-[15px] font-medium no-underline transition-colors",
+    isActive ? "text-white" : "text-slate-300 hover:text-white",
+  );
+
+// Closes a popover on outside click or Escape
+const useDismiss = (open, setOpen) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onClick = (e) => !ref.current?.contains(e.target) && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, setOpen]);
+  return ref;
+};
 
 const Navbar = () => {
-  const [showProfile, setShowProfile] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const data = useCart();
   const navigate = useNavigate();
+  const cart = useCart();
+  const { wishlistCount } = useWishlist();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const menuRef = useDismiss(menuOpen, setMenuOpen);
 
-  const userEmail = localStorage.getItem("userEmail") || "Guest";
-  const userName = localStorage.getItem("userName") || "User";
-  const isLoggedIn = !!localStorage.getItem("authToken");
+  const { token, name, email, role } = getSession();
+  const isLoggedIn = Boolean(token);
+  const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
-  const getInitials = (name) => {
-    if (!name || name === "Guest") return "U";
-    const parts = name.trim().split(" ");
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return parts[0].charAt(0).toUpperCase() + parts[parts.length - 1].charAt(0).toUpperCase();
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    toast.success("Logout Successful 👋");
+  const logout = () => {
+    clearSession();
+    setMenuOpen(false);
+    setMobileOpen(false);
+    toast.success("You're logged out");
     navigate("/login");
   };
 
   return (
-    <>
-      <nav className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 to-slate-800 shadow-lg border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-16 sm:h-20 flex items-center justify-between">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group no-underline">
-              <span className="text-2xl sm:text-3xl transition-transform group-hover:scale-105">🍔</span>
-              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500">
-                GoFood
-              </span>
+    <header className="sticky top-0 z-40 bg-ink">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex items-center gap-2 no-underline">
+          <span className="text-2xl leading-none" aria-hidden="true">
+            🍔
+          </span>
+          <span className="font-display text-xl font-bold tracking-tight text-saffron">GoFood</span>
+        </Link>
+
+        <nav aria-label="Main" className="ml-6 hidden items-center gap-1 md:flex">
+          <NavLink to="/" end className={navLinkClass}>
+            Restaurants
+          </NavLink>
+          {isLoggedIn && (
+            <NavLink to="/myorder" className={navLinkClass}>
+              My orders
+            </NavLink>
+          )}
+          <NavLink to="/help" className={navLinkClass}>
+            Help
+          </NavLink>
+        </nav>
+
+        <div className="ml-auto flex items-center gap-2">
+          {wishlistCount > 0 && (
+            <Link
+              to="/wishlist"
+              aria-label={`Saved dishes (${wishlistCount})`}
+              title="Saved dishes"
+              className="hidden h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 hover:text-white sm:flex"
+            >
+              <Heart className="h-5 w-5" />
             </Link>
+          )}
 
-            {/* Desktop Navigation – only Home & My Orders */}
-            <div className="hidden md:flex items-center gap-6">
-              <Link
-                to="/"
-                className="text-white/80 hover:text-white font-medium transition-colors duration-200 no-underline"
-              >
-                Home
-              </Link>
-              {isLoggedIn && (
-                <Link
-                  to="/myorder"
-                  className="text-white/80 hover:text-white font-medium transition-colors duration-200 no-underline"
-                >
-                  My Orders
-                </Link>
-              )}
-            </div>
+          <Link
+            to="/cart"
+            className="relative flex h-10 items-center gap-2 rounded-lg px-3 text-[15px] font-semibold text-white no-underline hover:bg-white/10"
+          >
+            <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+            <span className="hidden sm:inline">Cart</span>
+            {cartCount > 0 && (
+              <span className="tabular rounded-full bg-saffron px-1.5 text-xs font-bold leading-5 text-ink">
+                {cartCount}
+                <span className="sr-only"> items</span>
+              </span>
+            )}
+          </Link>
 
-            {/* Right Section – Cart Icon + Profile */}
-            <div className="flex items-center gap-2">
-              {/* ✅ Cart Icon – only here, no text */}
-              {isLoggedIn && (
-                <button 
-                  onClick={() => navigate("/cart")}
-                  className="relative p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200"
-                  aria-label="Cart"
-                >
-                  <FaShoppingCart className="text-white/80 hover:text-white text-lg" />
-                  {data.length > 0 && (
-                    <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-yellow-400 text-slate-900 text-[10px] font-bold rounded-full shadow-lg shadow-yellow-400/30">
-                      {data.length}
-                    </span>
-                  )}
-                </button>
-              )}
-
-              {/* Profile */}
-              <div className="ml-1">
-                <div className="hidden md:flex items-center gap-2">
-                  {isLoggedIn ? (
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowProfile(!showProfile)}
-                        className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-xs font-bold text-slate-900 shadow-md">
-                          {getInitials(userName)}
-                        </div>
-                        <svg
-                          className={`w-3 h-3 text-white/60 transition-transform duration-200 ${
-                            showProfile ? 'rotate-180' : ''
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-
-                      {showProfile && (
-                        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-white/10 overflow-hidden z-50">
-                          <div className="p-4 text-center border-b border-gray-100 dark:border-gray-700">
-                            <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-lg font-bold text-slate-900 shadow-lg">
-                              {getInitials(userName)}
-                            </div>
-                            <h4 className="mt-2 font-semibold text-gray-800 dark:text-white text-sm break-all">
-                              {userName}
-                            </h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 break-all">
-                              {userEmail}
-                            </p>
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-medium rounded-full">
-                              Customer
-                            </span>
-                          </div>
-
-                          <div className="p-1.5">
-                            <Link
-                              to="/myorder"
-                              onClick={() => setShowProfile(false)}
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors no-underline"
-                            >
-                              <FaClipboardList className="text-gray-400" />
-                              <span>My Orders</span>
-                            </Link>
-                            <Link
-                              to="/wishlist"
-                              onClick={() => setShowProfile(false)}
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors no-underline"
-                            >
-                              <FaHeart className="text-gray-400" />
-                              <span>Wishlist</span>
-                            </Link>
-                           
-                            <Link
-                              to="/profile"
-                              onClick={() => setShowProfile(false)}
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors no-underline"
-                            >
-                              <FaUser className="text-gray-400" />
-                              <span>My Profile</span>
-                            </Link>
-                            <Link
-                              to="/settings"
-                              onClick={() => setShowProfile(false)}
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors no-underline"
-                            >
-                              <FaCog className="text-gray-400" />
-                              <span>Account Settings</span>
-                            </Link>
-                           
-                            <Link
-                              to="/help"
-                              onClick={() => setShowProfile(false)}
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors no-underline"
-                            >
-                              <FaQuestionCircle className="text-gray-400" />
-                              <span>Help & Support</span>
-                            </Link>
-                          </div>
-
-                          <button
-                            onClick={() => {
-                              setShowProfile(false);
-                              handleLogout();
-                            }}
-                            className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 text-sm transition-colors"
-                          >
-                            <FaSignOutAlt />
-                            Logout
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to="/login"
-                        className="px-3 py-1.5 text-sm font-medium text-white/80 hover:text-white transition-colors no-underline"
-                      >
-                        Login
-                      </Link>
-                      <Link
-                        to="/signup"
-                        className="px-4 py-1.5 text-sm font-semibold bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-full shadow-lg shadow-yellow-400/20 transition-all duration-200 hover:scale-105 no-underline"
-                      >
-                        Sign Up
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Mobile Menu Toggle */}
+          {isLoggedIn ? (
+            <div className="relative hidden md:block" ref={menuRef}>
               <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="md:hidden text-white/80 hover:text-white text-2xl p-1.5"
-                aria-label="Toggle menu"
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
+                className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-2 text-white hover:bg-white/10"
               >
-                {menuOpen ? <FaTimes /> : <FaBars />}
+                <Avatar name={name} size="sm" className="bg-saffron! text-ink!" />
+                <span className="max-w-[120px] truncate text-sm font-semibold">{name?.split(" ")[0]}</span>
+                <ChevronDown className="h-4 w-4 text-slate-400" aria-hidden="true" />
               </button>
-            </div>
-          </div>
-        </div>
 
-        {/* ✅ Mobile Menu – No Cart Link, Logout at bottom */}
-        {menuOpen && (
-          <div className="md:hidden bg-slate-900/95 backdrop-blur-sm border-t border-white/10 px-4 py-3 shadow-2xl">
-            <div className="flex flex-col gap-1.5">
-              <Link
-                to="/"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm no-underline"
-              >
-                <FaHome className="text-yellow-400" />
-                Home
-              </Link>
-              {isLoggedIn && (
-                <>
-                  <Link
-                    to="/myorder"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm no-underline"
-                  >
-                    <FaClipboardList className="text-yellow-400" />
-                    My Orders
-                  </Link>
-                  {/* ❌ Cart link removed from mobile menu – icon already in top navbar */}
-                  <Link
-                    to="/wishlist"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm no-underline"
-                  >
-                    <FaHeart className="text-yellow-400" />
-                    Wishlist
-                  </Link>
-                 
-                  <Link
-                    to="/profile"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm no-underline"
-                  >
-                    <FaUser className="text-yellow-400" />
-                    My Profile
-                  </Link>
-                  <Link
-                    to="/settings"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm no-underline"
-                  >
-                    <FaCog className="text-yellow-400" />
-                    Account Settings
-                  </Link>
-                
-                  <Link
-                    to="/help"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm no-underline"
-                  >
-                    <FaQuestionCircle className="text-yellow-400" />
-                    Help & Support
-                  </Link>
-                </>
-              )}
-
-              <hr className="border-white/10 my-1" />
-
-              {isLoggedIn ? (
-                <>
-                  <div className="flex items-center gap-3 px-3 py-2 text-white/60">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-xs font-bold text-slate-900">
-                      {getInitials(userName)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white truncate">{userName}</p>
-                      <p className="text-xs text-white/50 truncate">{userEmail}</p>
-                    </div>
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white shadow-lg animate-rise-in"
+                >
+                  <div className="border-b border-line px-4 py-3">
+                    <p className="truncate font-semibold text-ink">{name}</p>
+                    <p className="truncate text-sm text-muted">{email}</p>
                   </div>
-                  {/* ✅ Logout button - always visible */}
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      handleLogout();
-                    }}
-                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors font-medium text-sm"
-                  >
-                    <FaSignOutAlt />
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-center py-2.5 rounded-lg border border-white/20 text-white/80 hover:text-white hover:border-white/40 transition-all text-sm no-underline"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/signup"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-center py-2.5 rounded-lg bg-yellow-400 text-slate-900 font-bold hover:bg-yellow-500 transition-all text-sm no-underline"
-                  >
-                    Sign Up
-                  </Link>
-                </>
+                  <div className="py-1.5">
+                    {role === "admin" && (
+                      <Link
+                        to="/admin/dashboard"
+                        role="menuitem"
+                        className="flex items-center gap-3 px-4 py-2 text-[15px] font-semibold text-ink no-underline hover:bg-canvas"
+                      >
+                        <LayoutDashboard className="h-4 w-4 text-muted" aria-hidden="true" /> Admin panel
+                      </Link>
+                    )}
+                    {ACCOUNT_LINKS.map(({ to, label, icon: Icon }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        role="menuitem"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-[15px] text-ink no-underline hover:bg-canvas"
+                      >
+                        <Icon className="h-4 w-4 text-muted" aria-hidden="true" /> {label}
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="border-t border-line py-1.5">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={logout}
+                      className="flex w-full items-center gap-3 px-4 py-2 text-[15px] font-medium text-danger hover:bg-danger-soft"
+                    >
+                      <LogOut className="h-4 w-4" aria-hidden="true" /> Log out
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
-          </div>
-        )}
-      </nav>
+          ) : (
+            <div className="hidden items-center gap-2 md:flex">
+              <Link to="/login" className="rounded-lg px-3 py-2 text-[15px] font-semibold text-white no-underline hover:bg-white/10">
+                Log in
+              </Link>
+              <Link to="/signup" className={cx(buttonStyles("primary"), "bg-saffron! text-ink! hover:bg-yellow-300! no-underline")}>
+                Sign up
+              </Link>
+            </div>
+          )}
 
-      <style>{`
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .md\\:hidden.bg-slate-900\\/95 {
-          animation: slideDown 0.2s ease-out;
-        }
-        a {
-          text-decoration: none !important;
-        }
-      `}</style>
-    </>
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-expanded={mobileOpen}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-white hover:bg-white/10 md:hidden"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {mobileOpen && (
+        <nav aria-label="Mobile" className="border-t border-white/10 px-4 pb-4 pt-2 md:hidden animate-rise-in">
+          {isLoggedIn && (
+            <div className="mb-2 flex items-center gap-3 border-b border-white/10 px-1 py-3">
+              <Avatar name={name} size="md" className="bg-saffron! text-ink!" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-white">{name}</p>
+                <p className="truncate text-sm text-slate-400">{email}</p>
+              </div>
+            </div>
+          )}
+          {[
+            { to: "/", label: "Restaurants" },
+            ...(isLoggedIn ? ACCOUNT_LINKS : [{ to: "/help", label: "Help" }]),
+            ...(role === "admin" ? [{ to: "/admin/dashboard", label: "Admin panel" }] : []),
+          ].map(({ to, label }) => (
+            <Link
+              key={to}
+              to={to}
+              onClick={() => setMobileOpen(false)}
+              className="block rounded-lg px-3 py-2.5 text-[15px] font-medium text-slate-200 no-underline hover:bg-white/10"
+            >
+              {label}
+            </Link>
+          ))}
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={logout}
+              className="mt-2 block w-full rounded-lg px-3 py-2.5 text-left text-[15px] font-medium text-red-300 hover:bg-white/10"
+            >
+              Log out
+            </button>
+          ) : (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Link to="/login" className={cx(buttonStyles("secondary"), "no-underline")}>
+                Log in
+              </Link>
+              <Link to="/signup" className={cx(buttonStyles("primary"), "bg-saffron! text-ink! no-underline")}>
+                Sign up
+              </Link>
+            </div>
+          )}
+        </nav>
+      )}
+    </header>
   );
 };
 

@@ -19,15 +19,51 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
+    phone:{
+        type: String,
+        default: ""
+    },
+    avatar:{
+        type: String,
+        default: ""
+    },
     date:{
         type: Date,
-        sefault: Date.now
+        default: Date.now
     },
     role: {
     type: String,
     enum: ["user", "admin"],
     default: "user",
   },
+    // No default on purpose: accounts created before email verification
+    // existed have no value and are treated as verified.
+    isVerified: {
+        type: Boolean
+    },
+    // OTP fields are hidden from queries unless explicitly selected
+    otp: {
+        type: String,
+        select: false
+    },
+    otpPurpose: {
+        type: String,
+        enum: ["verify", "reset"],
+        select: false
+    },
+    otpExpires: {
+        type: Date,
+        select: false
+    },
+    otpAttempts: {
+        type: Number,
+        default: 0,
+        select: false
+    },
+    otpLastSent: {
+        type: Date,
+        select: false
+    },
 })
 
 module.exports = mongoose.model('user', UserSchema);

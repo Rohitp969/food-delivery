@@ -1,7 +1,37 @@
 @import "tailwindcss";
 
-body{
-font-family:Arial,sans-serif;
+/* GoFood design tokens — navy and saffron come from the customer navbar, leaf from the home hero */
+@theme {
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, sans-serif;
+
+  --color-ink: #0f1a2e;
+  --color-ink-2: #1b2840;
+  --color-leaf: #15803d;
+  --color-leaf-dark: #166534;
+  --color-leaf-soft: #e8f5ec;
+  --color-saffron: #facc15;
+  --color-saffron-soft: #fef9c3;
+  --color-canvas: #f3f5f7;
+  --color-line: #e2e6eb;
+  --color-muted: #5e6b7a;
+  --color-danger: #b42318;
+  --color-danger-soft: #fef3f2;
+}
+
+body {
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* One visible focus style for links and buttons (form fields draw their own ring) */
+:where(a, button, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-leaf);
+  outline-offset: 2px;
 }
 
 #carousel{
@@ -14,4 +44,29 @@ max-height:500px;
 }
 .animate-bounce-slow {
   animation: bounce-slow 2s infinite ease-in-out;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-rise-in { animation: rise-in 180ms ease-out; }
+.animate-slide-in-right { animation: slide-in-right 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.animate-fade-in { animation: fade-in 150ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in,
+  .animate-slide-in-right,
+  .animate-fade-in,
+  .animate-bounce-slow {
+    animation: none;
+  }
 }

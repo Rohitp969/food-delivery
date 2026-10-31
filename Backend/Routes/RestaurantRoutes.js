@@ -61,11 +61,45 @@
 
 
 const express = require("express");
+const mongoose = require("mongoose");
 
 const router = express.Router();
 
 const Restaurant = require("../models/RestaurantModels");
 const Food = require("../models/FoodModels");
+const { requireAuth, requireAdmin } = require("../middleware/auth");
+
+
+// Adds the food categories each restaurant serves (used by the home page filters)
+const withCategories = async (restaurants) => {
+  const groups = await Food.aggregate([
+    { $match: { restaurantId: { $in: restaurants.map((r) => r._id) } } },
+    { $group: { _id: "$restaurantId", categories: { $addToSet: "$CategoryName" }, itemCount: { $sum: 1 } } },
+  ]);
+  const byId = Object.fromEntries(groups.map((g) => [String(g._id), g]));
+  return restaurants.map((r) => ({
+    ...r.toObject(),
+    categories: (byId[String(r._id)]?.categories || []).sort(),
+    itemCount: byId[String(r._id)]?.itemCount || 0,
+  }));
+};
+
+
+// ==========================================
+// GET ONE FOOD ITEM (public, for the dish page)
+// ==========================================
+router.get("/food/:id", async (req, res) => {
+  const food = mongoose.isValidObjectId(req.params.id)
+    ? await Food.findById(req.params.id).populate("restaurantId", "name rating deliveryTime image")
+    : null;
+
+  if (!food) {
+    return res.status(404).json({ success: false, message: "This dish is no longer on the menu" });
+  }
+
+  const { restaurantId: restaurant, ...rest } = food.toObject();
+  res.json({ success: true, food: { ...rest, restaurantId: restaurant?._id }, restaurant });
+});
 
 
 // ==========================================
@@ -73,7 +107,7 @@ const Food = require("../models/FoodModels");
 // ==========================================
 router.get("/", async (req, res) => {
   try {
-    const restaurants = await Restaurant.find();
+    const restaurants = await withCategories(await Restaurant.find());
 
     return res.status(200).json({
       success: true,
@@ -133,7 +167,7 @@ router.get("/nearby", async (req, res) => {
     // Maximum radius safety
     radius = Math.min(radius, 50);
 
-    const restaurants = await Restaurant.find({
+    const nearby = await Restaurant.find({
       location: {
         $near: {
           $geometry: {
@@ -149,6 +183,7 @@ router.get("/nearby", async (req, res) => {
         },
       },
     });
+    const restaurants = await withCategories(nearby);
 
     return res.status(200).json({
       success: true,
@@ -201,9 +236,9 @@ router.get("/:id/menu", async (req, res) => {
 
 
 // ==========================================
-// CREATE RESTAURANT
+// CREATE RESTAURANT (admin only)
 // ==========================================
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, requireAdmin, async (req, res) => {
   try {
     const {
       name,

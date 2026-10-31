@@ -1,11 +1,14 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import RequireAuth from "./components/RequireAuth";
 import { CartProvider } from "./context/ContextReducer";
 import { WishlistProvider } from "./context/WishlistContext"; 
 
 import Home from "./screens/Home";
 import Signup from "./screens/Signup";
 import Login from "./screens/Login";
+import VerifyEmail from "./screens/VerifyEmail";
+import ForgotPassword from "./screens/ForgotPassword";
 import MyOrder from "./screens/MyOrder";
 import Cart from "./screens/Cart";
 import Checkout from "./screens/Checkout";
@@ -39,19 +42,22 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/myorder" element={<MyOrder />} />
+            <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+            <Route path="/myorder" element={<RequireAuth><MyOrder /></RequireAuth>} />
             <Route path="/food/:id" element={<FoodDetails />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<UserSettings />} />
+            <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="/settings" element={<RequireAuth><UserSettings /></RequireAuth>} />
             <Route path="/wishlist" element={<Wishlist />} />  {/* ✅ Already there */}
             <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/help" element={<HelpSupport />} />
             <Route path="/restaurant/:id" element={<RestaurantMenu />} />
 
             {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/admin" element={<RequireAuth role="admin"><AdminLayout /></RequireAuth>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="add-food" element={<AddFood />} />
               <Route path="food-list" element={<FoodList />} />

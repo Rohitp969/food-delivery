@@ -4,6 +4,7 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 require('dotenv').config();
+const { requireAuth } = require('../middleware/auth');
 
 // ✅ Check if credentials are present
 if (!process.env.CLOUDINARY_CLOUD_NAME) {
@@ -32,8 +33,8 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
-// ✅ Upload Route with proper error handling
-router.post('/upload', (req, res) => {
+// ✅ Upload Route with proper error handling (logged-in users only: food photos and profile photos)
+router.post('/upload', requireAuth, (req, res) => {
   upload.single('image')(req, res, function (err) {
     if (err) {
       console.error('❌ Multer Error:', err);

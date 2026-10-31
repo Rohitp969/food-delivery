@@ -1,183 +1,126 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import { FaShoppingBag, FaArrowLeft, FaTruck, FaGift } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { ShoppingBag, Trash2 } from "lucide-react";
+import StoreLayout from "../components/store/StoreLayout";
+import PriceSummary from "../components/store/PriceSummary";
+import QtyStepper from "../components/store/QtyStepper";
+import Button from "../components/ui/Button";
+import { ConfirmDialog } from "../components/ui/Modal";
+import { EmptyState } from "../components/ui/Display";
 import { useCart, useDispatchCart } from "../context/ContextReducer";
-import CartItem from "../components/Cart/CartItem";
-import OrderSummary from "../components/Cart/OrderSummary";
-import AddressModal from "../components/Cart/AddressModal";
-import Navbar from "../components/Navbar"; 
-import Footer from "../components/Footer"; 
-import EmptyCart from "../components/Cart/EmptyCart";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { cartTotals } from "../lib/cart";
+import { formatCurrency } from "../lib/format";
+import { buttonStyles, cx } from "../lib/styles";
 
 const Cart = () => {
-  const data = useCart();
+  const cart = useCart();
   const dispatch = useDispatchCart();
-  const navigate = useNavigate();
-
-  const [showAddressModal, setShowAddressModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const subtotal = data.reduce(
-    (total, item) => total + item.qty * item.price,
-    0
-  );
-  const deliveryFee = subtotal >= 499 ? 0 : 40;
-  const gst = Math.round(subtotal * 0.05);
-  const total = subtotal + deliveryFee + gst;
-
-  if (data.length === 0) {
-    return (
-      <>
-        <Navbar />  
-        <EmptyCart />
-      </>
-    );
-  }
-
-  const handleCheckOut = async ({
-    totalAmount,
-    paymentMethod,
-    address,
-    orderId,
-  }) => {
-    setLoading(true);
-    try {
-      const userEmail = localStorage.getItem("userEmail");
-      if (!userEmail) {
-        toast.error("Please login to place order");
-        navigate("/login");
-        return false;
-      }
-
-      const response = await fetch(`${API_URL}/api/orderData`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: userEmail,
-          order_data: data,
-          order_date: new Date().toLocaleString(),
-          address,
-          paymentMethod,
-          totalAmount,
-          orderId,
-        }),
-      });
-
-      const json = await response.json();
-
-      if (json.success) {
-        dispatch({ type: "DROP" });
-        toast.success("Order Placed Successfully 🎉");
-        navigate("/order-success", {
-          state: {
-            orderId,
-            totalAmount,
-            paymentMethod,
-            address,
-          },
-        });
-        return true;
-      } else {
-        toast.error(json.message || "Unable to create order");
-        return false;
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Server Error");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const proceedToCheckout = () => {
-    if (data.length === 0) {
-      toast.warn("Your cart is empty");
-      return;
-    }
-    setShowAddressModal(true);
-  };
+  const [confirmClear, setConfirmClear] = useState(false);
+  const totals = cartTotals(cart);
 
   return (
-    <>
-      <Navbar />  {/* ✅ Navbar fixed at top */}
-      <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8 pt-20"> {/* ✅ pt-20 to offset fixed navbar */}
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition mb-2"
-              >
-                <FaArrowLeft size={14} />
-                Continue Shopping
-              </Link>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
-                <FaShoppingBag className="text-yellow-500" />
-                Your Cart
-                <span className="text-sm font-normal text-gray-400 ml-2">
-                  ({data.length} {data.length === 1 ? "item" : "items"})
-                </span>
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              <span className="hidden sm:inline">
-                {deliveryFee === 0 ? (
-                  <span className="text-green-600 flex items-center gap-1">
-                    <FaTruck /> Free Delivery
-                  </span>
-                ) : (
-                  <span>Add ₹{499 - subtotal} more for free delivery</span>
-                )}
-              </span>
-            </div>
+    <StoreLayout>
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="font-display text-[28px] font-semibold tracking-tight text-ink">Your cart</h1>
+            {cart.length > 0 && (
+              <p className="tabular mt-1 text-[15px] text-muted">
+                {totals.count} item{totals.count === 1 ? "" : "s"}
+              </p>
+            )}
           </div>
-
-          {/* Main Grid */}
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-3">
-              {data.map((item, index) => (
-                <CartItem key={index} item={item} index={index} />
-              ))}
-            </div>
-            <div className="lg:sticky lg:top-24 self-start">
-              <OrderSummary
-                data={data}
-                handleCheckOut={handleCheckOut}
-                dispatch={dispatch}
-                subtotal={subtotal}
-                deliveryFee={deliveryFee}
-                gst={gst}
-                total={total}
-                onProceed={proceedToCheckout}
-                loading={loading}
-              />
-            </div>
-          </div>
-
-          {deliveryFee > 0 && (
-            <div className="mt-6 lg:hidden bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center gap-2 text-sm text-yellow-700">
-              <FaTruck size={16} />
-              Add ₹{499 - subtotal} more to get free delivery!
-            </div>
+          {cart.length > 0 && (
+            <Button variant="danger-ghost" size="sm" icon={Trash2} onClick={() => setConfirmClear(true)}>
+              Empty cart
+            </Button>
           )}
         </div>
-      </div>
-      <Footer />  {/* Optional: include footer if needed */}
 
-      {showAddressModal && (
-        <AddressModal
-          total={total}
-          closeModal={() => setShowAddressModal(false)}
-          handleCheckOut={handleCheckOut}
-          dispatch={dispatch}
-        />
-      )}
-    </>
+        {cart.length === 0 ? (
+          <div className="rounded-xl border border-line bg-white">
+            <EmptyState
+              icon={ShoppingBag}
+              title="Your cart is empty"
+              description="Find a restaurant you like and add a few dishes. They'll wait for you here."
+              action={
+                <Link to="/" className={cx(buttonStyles("primary"), "no-underline")}>
+                  Browse restaurants
+                </Link>
+              }
+            />
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+            <ul className="divide-y divide-line rounded-xl border border-line bg-white px-5">
+              {cart.map((item, index) => (
+                <li key={`${item.id}-${item.size}`} className="flex items-center gap-4 py-4">
+                  <img src={item.img} alt="" className="h-16 w-16 shrink-0 rounded-lg bg-canvas object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <Link to={`/food/${item.id}`} className="block truncate font-semibold text-ink no-underline hover:text-leaf">
+                      {item.name}
+                    </Link>
+                    <p className="tabular text-sm text-muted">
+                      {item.size}, {formatCurrency(item.price)} each
+                    </p>
+                    <div className="mt-2 flex items-center gap-3 sm:hidden">
+                      <QtyStepper
+                        size="sm"
+                        qty={item.qty}
+                        label={item.name}
+                        onIncrease={() => dispatch({ type: "INCREASE", index })}
+                        onDecrease={() => dispatch(item.qty > 1 ? { type: "DECREASE", index } : { type: "REMOVE", index })}
+                      />
+                    </div>
+                  </div>
+                  <QtyStepper
+                    className="hidden sm:inline-flex"
+                    qty={item.qty}
+                    label={item.name}
+                    onIncrease={() => dispatch({ type: "INCREASE", index })}
+                    onDecrease={() => dispatch(item.qty > 1 ? { type: "DECREASE", index } : { type: "REMOVE", index })}
+                  />
+                  <p className="tabular w-20 text-right font-semibold text-ink">{formatCurrency(item.price * item.qty)}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    icon={Trash2}
+                    onClick={() => dispatch({ type: "REMOVE", index })}
+                    aria-label={`Remove ${item.name}`}
+                    title="Remove"
+                    className="text-muted hover:text-danger"
+                  />
+                </li>
+              ))}
+            </ul>
+
+            <div className="lg:sticky lg:top-24">
+              <PriceSummary totals={totals}>
+                <Link to="/checkout" className={cx(buttonStyles("primary", "lg"), "w-full no-underline")}>
+                  Checkout, {formatCurrency(totals.total)}
+                </Link>
+                <Link to="/" className="mt-3 block text-center text-sm font-semibold text-leaf no-underline">
+                  Add more dishes
+                </Link>
+              </PriceSummary>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <ConfirmDialog
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={() => {
+          dispatch({ type: "DROP" });
+          setConfirmClear(false);
+        }}
+        title="Empty your cart?"
+        confirmLabel="Empty cart"
+      >
+        All {totals.count} items will be removed. You can add them again from the restaurant's menu.
+      </ConfirmDialog>
+    </StoreLayout>
   );
 };
 

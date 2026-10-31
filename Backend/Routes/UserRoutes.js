@@ -141,7 +141,7 @@ router.post(
         message: "OTP sent to your email",
       });
     } catch (error) {
-      console.log(error);
+      console.error("Signup verification email failed:", error);
       res.status(500).json({
         success: false,
         message: "Could not send verification email. Please try again.",
@@ -225,7 +225,7 @@ const sendOtpForPurpose = async (req, res, purpose) => {
       message: "OTP sent to your email",
     });
   } catch (error) {
-    console.log(error);
+    console.error("OTP email delivery failed:", error);
     return res.status(500).json({
       success: false,
       message: "Could not send OTP email. Please try again.",
@@ -251,6 +251,34 @@ router.post(
   async (req, res) => {
     if (validationError(req, res)) return;
     return sendOtpForPurpose(req, res, "reset");
+  },
+);
+
+router.post(
+  "/verifyResetOtp",
+  [
+    body("email", "Please enter a valid email").trim().isEmail(),
+    body("otp", "OTP must be 6 digits").trim().isLength({ min: 6, max: 6 }).isNumeric(),
+  ],
+  async (req, res) => {
+    if (validationError(req, res)) return;
+
+    try {
+      const user = await User.findOne({ email: req.body.email }).select(OTP_FIELDS);
+      if (!user) {
+        return res.status(400).json({ success: false, message: "Account not found" });
+      }
+
+      const otpError = await checkOtp(user, req.body.otp, "reset");
+      if (otpError) {
+        return res.status(400).json({ success: false, message: otpError });
+      }
+
+      return res.json({ success: true, message: "Code verified" });
+    } catch (error) {
+      console.error("Password reset OTP verification failed:", error);
+      return res.status(500).json({ success: false, message: "Something went wrong" });
+    }
   },
 );
 

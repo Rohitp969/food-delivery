@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import RequireAuth from "./components/RequireAuth";
 import { CartProvider } from "./context/ContextReducer";
@@ -9,6 +8,8 @@ import Signup from "./screens/Signup";
 import Login from "./screens/Login";
 import VerifyEmail from "./screens/VerifyEmail";
 import ForgotPassword from "./screens/ForgotPassword";
+import ResetPasswordOtp from "./screens/ResetPasswordOtp";
+import ChangePassword from "./screens/ChangePassword";
 import MyOrder from "./screens/MyOrder";
 import Cart from "./screens/Cart";
 import Checkout from "./screens/Checkout";
@@ -44,6 +45,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/otp" element={<ResetPasswordOtp />} />
+            <Route path="/reset-password/change" element={<ChangePassword />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
             <Route path="/myorder" element={<RequireAuth><MyOrder /></RequireAuth>} />
